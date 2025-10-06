@@ -1,5 +1,5 @@
 package ecommerce.model;
 
-public class OrderStatus {
+public enum OrderStatus {  PLACED, SHIPPED, DELIVERED, CANCELED }
 
-}
+

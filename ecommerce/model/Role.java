@@ -1,5 +1,4 @@
 package ecommerce.model;
 
-public class Role {
+public enum Role { ADMIN, CUSTOMER }
 
-}
