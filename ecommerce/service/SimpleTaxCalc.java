@@ -13,6 +13,7 @@ public class SimpleTaxCalc {
     public SimpleTaxCalc() throws FileNotFoundException {
         stateTaxRates = new HashMap<>();
         File file = new File("ecommerce/data/state_tax_rates.csv");
+        //data in csv from https://taxfoundation.org/data/all/state/sales-tax-rates/
         Scanner fileReader = new Scanner(file);
         fileReader.next(); //skip header
         while (fileReader.hasNextLine()) {
