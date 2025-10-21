@@ -12,10 +12,10 @@ public class CartItem {
 
     /**
      * Creates a new CartItem with the specified product and quantity.
-     * 
-     * @param product  The product being added to the cart
+     *
+     * @param product The product being added to the cart
      * @param quantity The quantity of the product
-     * 
+     *
      * Quantity validiation is handled in the Cart class
      */
     public CartItem(Product product, int quantity) {
@@ -24,11 +24,10 @@ public class CartItem {
     }
 
     /**
-     * Calculates and returns the total price for this cart item (product price *
-     * quantity).
-     * Uses the product's getPrice() method rather than stored copy to ensure any
-     * price updates are reflected.
-     * 
+     * Calculates and returns the total price for this cart item (product price
+     * * quantity). Uses the product's getPrice() method rather than stored copy
+     * to ensure any price updates are reflected.
+     *
      * @return the total price for this product line
      */
     public double getTotalPrice() {

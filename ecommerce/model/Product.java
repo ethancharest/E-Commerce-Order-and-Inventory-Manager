@@ -1,8 +1,8 @@
 package ecommerce.model;
 
 /**
- * Represents a product available for purchase in the e-commerce system
- * Each product has an ID, name, category, price, and available stock quantity.
+ * Represents a product available for purchase in the e-commerce system Each
+ * product has an ID, name, category, price, and available stock quantity.
  */
 public class Product {
 
@@ -14,14 +14,13 @@ public class Product {
 
     /**
      * Constructs a new Product with the specified details.
-     * 
-     * @param id             Unique product identifier
-     * @param name           Product name
-     * @param category       Product category
-     * @param price          Current price of the product
+     *
+     * @param id Unique product identifier
+     * @param name Product name
+     * @param category Product category
+     * @param price Current price of the product
      * @param availableStock Quantity available in stock
      */
-
     public Product(String id, String name, String category, double price, int availableStock) {
         this.id = id;
         this.name = name;
@@ -31,7 +30,6 @@ public class Product {
     }
 
     // Getters and setters for product fields
-
     public String getId() {
         return id;
     }

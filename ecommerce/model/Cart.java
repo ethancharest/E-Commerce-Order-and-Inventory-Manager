@@ -5,13 +5,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Represents a shopping cart containing products selected by the user.
- * This class is responsible for managing cart items, calculating subtotals,
- * and maintaining a consistent view of the cart's contents.
- * 
- * Cart exists in memory only and is cleared when customer serssion is cleared.
+ * Represents a shopping cart containing products selected by the user. This
+ * class is responsible for managing cart items, calculating subtotals, and
+ * maintaining a consistent view of the cart's contents.
+ *
+ * Cart exists in memory only and is cleared when customer session is cleared.
  */
-
 public class Cart {
 
     // Map of product ID to CartItem
@@ -20,30 +19,31 @@ public class Cart {
 
     /**
      * Adds a product to the cart or increases product quantity.
-     * 
-     * @param p        The product to add
+     *
+     * @param p The product to add
      * @param quantity The quantity to add
-     * @throws IllegalArgumentException if quantity is less than 1, ensures the cate
-     *                                  state remains valid
+     * @throws IllegalArgumentException if quantity is less than 1, ensures the
+     * cart state remains valid
      */
     public void add(Product p, int quantity) {
         if (quantity < 1) {
             throw new IllegalArgumentException("Quantity must be greater than zero");
         }
 
-        // If the product is already in the cart, increase the quantity
         CartItem existing = items.get(p.getId());
+        // if the product is not already in the cart, add it as a new item
         if (existing == null) {
             items.put(p.getId(), new CartItem(p, quantity));
+            // else if the product is already in the cart, increase the quantity
         } else {
             existing.setQuantity(existing.getQuantity() + quantity);
         }
     }
 
     /**
-     * Removes a product from the cart by its product ID.
-     * Used when a customer deleted an item from their cart.
-     * 
+     * Removes a product from the cart by its product ID. Used when a customer
+     * deleted an item from their cart.
+     *
      * @param productId The ID of the product to remove
      */
     public void remove(String productId) {
@@ -52,12 +52,11 @@ public class Cart {
 
     /**
      * Sets the quantity of a specific product in the cart.
-     * 
-     * @param productId The ID of the product to update
-     * @param quantity  The new quantity
      *
-     * If quantity is set to zero or less, the item is removed from
-     * the cart
+     * @param productId The ID of the product to update
+     * @param quantity The new quantity
+     *
+     * If quantity is set to zero or less, the item is removed from the cart
      */
     public void setCartQuantity(String productId, int quantity) {
         if (quantity < 0) {
@@ -65,7 +64,7 @@ public class Cart {
         } else {
             items.get(productId).setQuantity(quantity);
         }
-    }
+    } // do we need this method? seems like it does the same thing as add()
 
     /*
      * Calculates and returns the subtotal (before tax) for all items in the cart

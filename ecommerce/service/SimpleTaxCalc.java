@@ -8,9 +8,8 @@ import java.util.Scanner;
 
 /**
  * SimpleTaxCalc provides basic sales tax calculation based on U.S. state rates
- * Uses shipping address to determine applicable tax rate
- * Reads a CSV file of state tax rates at startup 
- * and uses it to calculate tax on order amounts
+ * Uses shipping address to determine applicable tax rate Reads a CSV file of
+ * state tax rates at startup and uses it to calculate tax on order amounts
  */
 public class SimpleTaxCalc {
 
@@ -19,9 +18,9 @@ public class SimpleTaxCalc {
 
     /**
      * Constructs a SimpleTaxCalc and loads state tax rates from CSV file
+     *
      * @throws FileNotFoundException if the tax rates file cannot be found
      */
-
     public SimpleTaxCalc() throws FileNotFoundException {
         stateTaxRates = new HashMap<>();
         File file = new File("ecommerce/data/state_tax_rates.csv");
@@ -43,12 +42,13 @@ public class SimpleTaxCalc {
 
     /**
      * Calculates the sales tax for a given address and amount
-     * 
+     *
      * @param adress The shipping address to determine tax rate
      * @param amount The amount to calculate tax on
-     * @return       The calculated tax amount, or 0.0 if no rate found
-     * 
-     * If a state code is missing or has no rate, returns 0.0 tax rather than throwing an exception.
+     * @return The calculated tax amount, or 0.0 if no rate found
+     *
+     * If a state code is missing or has no rate, returns 0.0 tax rather than
+     * throwing an exception.
      */
     public double calculateTax(Address adress, double amount) {
         Double rate = stateTaxRates.get(adress.getState());
