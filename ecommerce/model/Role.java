@@ -7,5 +7,5 @@ package ecommerce.model;
  * Using enum to ensure only valid roles are assigned.
  */
 public enum Role {
-    ADMIN, CUSTOMER
+    ADMIN, CUSTOMER, NOTFOUND
 }

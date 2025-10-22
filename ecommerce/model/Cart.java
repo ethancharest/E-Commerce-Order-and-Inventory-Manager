@@ -67,7 +67,6 @@ public class Cart {
     } // do we need this method? seems like it does the same thing as add()
 
     /*
-     * Calculates and returns the subtotal (before tax) for all items in the cart
      */
     public double subtotal() {
         double subtotal = 0.0;
