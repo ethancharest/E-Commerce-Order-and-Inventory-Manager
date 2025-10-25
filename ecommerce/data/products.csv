@@ -1,4 +1,4 @@
-id, name, category, price, stock_quantity
+id, name, category, price, stock
 101,Wireless Mouse,Electronics,25.99,150
 102,Pillow,Home,15.99,100
 103,Coffee Maker,Appliances,49.99,75

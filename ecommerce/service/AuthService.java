@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.Scanner;
+//this class should handle authentication of users based on a CSV file containing usernames, passwords, and roles
 
 public class AuthService {
 
