@@ -1,34 +1,30 @@
 package ecommerce;
 
-import ecommerce.model.Role;
-import ecommerce.service.AuthService;
-import ecommerce.service.ProductService;
-import java.io.FileNotFoundException;
+import ecommerce.model.*;
+import ecommerce.service.*;
+import ecommerce.ui.*;
 import java.io.IOException;
 import java.util.Scanner;
-//this is the main class which contains the main method to run the application
 
 public class EcommerceApp {
 
-    public static void main(String[] args) throws IOException {
-        Scanner scanner = new Scanner(System.in);
+    private static Scanner scanner = new Scanner(System.in);
+    private static LoginFrame loginFrame;
 
-        System.out.print("Please enter your username: ");
-        String username = scanner.nextLine();
-        System.out.print("Please enter your password: ");
-        String password = scanner.nextLine();
-        Role role = Role.NOTFOUND;
-        try {
-            AuthService authService = new AuthService();
-            role = authService.authenticate(username, password);
-            if (role == Role.NOTFOUND) {
-                System.out.println("Authentication failed. Invalid username or password.");
-            } else {
-                System.out.println("Authentication successful! Logged in as: " + username + " with role: " + role);
+    public static void main(String[] args) throws IOException {
+
+        loginFrame = new LoginFrame(role -> {
+            // runs after dispose in LoginFrame
+            try {
+                startApp(role);
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        } catch (FileNotFoundException e) {
-            System.out.println("A file not found error occurred during authentication: " + e.getMessage());
-        }
+        });
+    }
+
+    private static void startApp(Role role) throws IOException {
+        loginFrame.dispose(); // close login window
         if (role == Role.ADMIN) {
             ProductService productService = new ProductService();
             System.out.println("Welcome Admin! You have access to product management features.");
@@ -68,6 +64,10 @@ public class EcommerceApp {
                         System.out.println("Invalid option selected.");
                 }
             }
+        } else if (role == Role.CUSTOMER) {
+            System.out.println("Welcome Customer! Product browsing and ordering features are under development.");
+        } else {
+            System.out.println("No role found. Exiting application.");
         }
     }
 }
