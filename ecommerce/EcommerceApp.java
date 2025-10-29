@@ -35,14 +35,14 @@ public class EcommerceApp {
                 option = scanner.nextLine();
                 switch (option) {
                     case "1":
-                        System.out.println("Enter the product details to add (all details comma separated, no spaces): ");
+                        System.out.println("Enter the product details to add (name,category,price,stock): ");
                         String[] details = scanner.nextLine().split(",");
                         productService.addProduct(details[0], details[1], Double.parseDouble(details[2]), Integer.parseInt(details[3]));
                         break;
                     case "2":
                         System.out.println("Enter the product ID to update: ");
                         int productId = Integer.parseInt(scanner.nextLine());
-                        System.out.println("Enter the new product details (all details comma separated, no spaces): ");
+                        System.out.println("Enter the new product details (name,category,price,stock): ");
                         String[] newDetails = scanner.nextLine().split(",");
                         productService.updateProduct(productId, newDetails[0], newDetails[1], Double.parseDouble(newDetails[2]), Integer.parseInt(newDetails[3]));
                         break;
