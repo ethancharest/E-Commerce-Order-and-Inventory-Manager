@@ -23,6 +23,35 @@ public class ProductService {
         //we could put the deleted IDs in a separate file and read from there first
         int maxID = 0;
         ArrayList<String[]> products = getAllProducts();
+        // reader = new Scanner("ecommerce/data/deletedID.csv");
+        // writer = new FileWriter("ecommerce/data/deletedID.csv", true);
+        // FileWriter tempWriter = new FileWriter("ecommerce/data/deletedID.csv");
+        
+        // for (String[] product : products) {
+        //     int id = Integer.parseInt(product[0]);
+        //     if (id != productId) {
+        //         String existingEntry = "\n" + String.join(",", product);
+        //         tempWriter.write(existingEntry);
+        //     }
+        // }
+        // tempWriter.close();
+        // writer.close();
+        // File originalFile = new File("ecommerce/data/products.csv");
+        // File tempFile = new File("ecommerce/data/temp_products.csv");
+        // if (originalFile.delete()) {
+        //     tempFile.renameTo(originalFile);
+        //     writer = new FileWriter(productFile, true);
+        //     System.out.println("Product deleted successfully: ID " + productId);
+        // } else {
+        //     System.out.println("Failed to delete product: ID " + productId);
+        // }
+    
+        // if (reader.hasNextLine()) {
+        //     String line = reader.nextLine();
+        //     maxID = Integer.parseInt(line);
+        //     reader.close();
+        //     return maxID;
+        // }
         for (String[] product : products) {
             int id = Integer.parseInt(product[0]);
             if (id > maxID) {
@@ -89,6 +118,10 @@ public class ProductService {
             if (id != productId) {
                 String existingEntry = "\n" + String.join(",", product);
                 tempWriter.write(existingEntry);
+            } else {
+                FileWriter logWriter = new FileWriter ("ecommerce/data/deletedID.csv", true);
+                logWriter.write(productId + "\n");
+                logWriter.close();
             }
         }
         tempWriter.close();
