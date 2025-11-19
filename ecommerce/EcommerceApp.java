@@ -69,5 +69,6 @@ public class EcommerceApp {
                 }
             }
         }
+        scanner.close();
     }
 }
