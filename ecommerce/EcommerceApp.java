@@ -5,6 +5,7 @@ import ecommerce.service.*;
 import ecommerce.ui.*;
 import java.io.IOException;
 import java.util.Scanner;
+import javax.swing.SwingUtilities;
 
 public class EcommerceApp {
 
@@ -12,21 +13,47 @@ public class EcommerceApp {
     private static LoginFrame loginFrame;
 
     public static void main(String[] args) throws IOException {
-
-        loginFrame = new LoginFrame(role -> {
-            // runs after dispose in LoginFrame
-            try {
-                startApp(role);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+/**
+ * Removed the admin console prompts and transferred them into AdminFrame() 
+ */
+        // Create the login frame on the Swing event thread
+        SwingUtilities.invokeLater(() -> {
+            loginFrame = new LoginFrame(role -> {
+                // runs after dispose in LoginFrame
+                try {
+                    startApp(role);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
         });
     }
 
     private static void startApp(Role role) throws IOException {
         loginFrame.dispose(); // close login window
         if (role == Role.ADMIN) {
-            ProductService productService = new ProductService();
+            // Launch Admin GUI on the Swing event thread and exit the console flow
+            SwingUtilities.invokeLater(() -> {
+                try {
+                    new AdminFrame();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+            return; // GUI will handle further interactions
+        } else if (role == Role.CUSTOMER) {
+            System.out.println("Welcome Customer! Product browsing and ordering features are under development.");
+        } else {
+            System.out.println("No role found. Exiting application.");
+        }
+        scanner.close();
+    }
+}
+/**
+ * This function is retired now, but im keeping it here commented out just in case we need it before final submission 
+ * 
+ * 
+ * ProductService productService = new ProductService();
             System.out.println("Welcome Admin! You have access to product management features.");
             String option = "";
             while (!option.equals("6")) {
@@ -64,11 +91,4 @@ public class EcommerceApp {
                         System.out.println("Invalid option selected.");
                 }
             }
-        } else if (role == Role.CUSTOMER) {
-            System.out.println("Welcome Customer! Product browsing and ordering features are under development.");
-        } else {
-            System.out.println("No role found. Exiting application.");
-        }
-        scanner.close();
-    }
-}
+ */
