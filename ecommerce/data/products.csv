@@ -4,5 +4,5 @@ id, name, category, price, stock
 103,Coffee Maker,Appliances,49.99,75
 104,Running Shoes,Sports,89.99,60
 105,Smartphone,Electronics,699.99,40
-106,horse,animal,999.99,1
-107,Computer,Electronic,999.99,45
+106,horse,animal,999.99,2
+107,computer,electronics,10000.0,100

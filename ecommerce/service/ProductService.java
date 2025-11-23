@@ -10,7 +10,7 @@ import java.util.Scanner;
 public class ProductService {
 
     // CSV file where all products data is stored
-    private File productFile; 
+    private File productFile;
 
     // Writer used for appending new products to the CSV
     private FileWriter writer;
@@ -27,13 +27,11 @@ public class ProductService {
     }
 
     /**
-     * Generates the next product ID
-     * Currently it:
-     * -reads all existing products 
-     * -finds the highest ID
-     * -returns maxID + 1
-     * 
+     * Generates the next product ID Currently it: -reads all existing products
+     * -finds the highest ID -returns maxID + 1
+     *
      * Note: IDs are monotonically increasing, deleted IDs are not reused
+     *
      * @return next product ID
      * @throws IOException
      */
@@ -48,7 +46,6 @@ public class ProductService {
         // reader = new Scanner("ecommerce/data/deletedID.csv");
         // writer = new FileWriter("ecommerce/data/deletedID.csv", true);
         // FileWriter tempWriter = new FileWriter("ecommerce/data/deletedID.csv");
-        
         // for (String[] product : products) {
         //     int id = Integer.parseInt(product[0]);
         //     if (id != productId) {
@@ -67,14 +64,12 @@ public class ProductService {
         // } else {
         //     System.out.println("Failed to delete product: ID " + productId);
         // }
-    
         // if (reader.hasNextLine()) {
         //     String line = reader.nextLine();
         //     maxID = Integer.parseInt(line);
         //     reader.close();
         //     return maxID;
         // }
-
         // Find the maximum ID currently in the products list
         for (String[] product : products) {
             int id = Integer.parseInt(product[0]);
@@ -88,8 +83,10 @@ public class ProductService {
     }
 
     /**
-     * Reads all products from the products CSV and returns them as a list of string arrays 
-     * Each String[] corresponds to one row: [id, name, category, price, stock]
+     * Reads all products from the products CSV and returns them as a list of
+     * string arrays Each String[] corresponds to one row: [id, name, category,
+     * price, stock]
+     *
      * @return list of all products
      * @throws IOException
      */
@@ -100,7 +97,7 @@ public class ProductService {
         reader = new Scanner(productFile);
 
         // Skip header line
-        reader.nextLine(); 
+        reader.nextLine();
 
         // Read each remaining line and split on commas 
         while (reader.hasNextLine()) {
@@ -110,14 +107,16 @@ public class ProductService {
         }
 
         // Close reader 
-        reader.close(); 
+        reader.close();
 
         return products;
     }
+
     /**
-     * Appends a new product to the CSV file
-     * ID is auto-generated, everything else comes from the caller
-     * @param name 
+     * Appends a new product to the CSV file ID is auto-generated, everything
+     * else comes from the caller
+     *
+     * @param name
      * @param category
      * @param price
      * @param stock
@@ -138,24 +137,24 @@ public class ProductService {
     }
 
     /**
-     * Updates an existing product identified by productId
-     * Implementation detail:
-     * - Read all products into memory
-     * - Write them into a temporary file, replacing the row that matches productId
-     * - Replace the original file with the temporary file
-     * @param productId 
+     * Updates an existing product identified by productId Implementation
+     * detail: - Read all products into memory - Write them into a temporary
+     * file, replacing the row that matches productId - Replace the original
+     * file with the temporary file
+     *
+     * @param productId
      * @param name
      * @param category
      * @param price
      * @param stock
-     * @throws IOException 
+     * @throws IOException
      */
     public void updateProduct(int productId, String name, String category, double price, int stock) throws IOException {
         ArrayList<String[]> products = getAllProducts();
 
         // Temporary file that will hold updated contents
         FileWriter tempWriter = new FileWriter("ecommerce/data/temp_products.csv");
-        
+
         // Write CSV header first 
         tempWriter.write("id, name, category, price, stock"); //header
 
@@ -189,16 +188,15 @@ public class ProductService {
             System.out.println("Failed to update product: ID " + productId);
         }
     }
+
     /**
-     * Deletes a product by ID
-     * Similar pattern to updateProduct():
-     * - Copy all rows except the one to delete into a temp file
-     * - Log the deleted ID
-     * - Replace original CSV with temp file 
-     * @param productId 
+     * Deletes a product by ID Similar pattern to updateProduct(): - Copy all
+     * rows except the one to delete into a temp file - Log the deleted ID -
+     * Replace original CSV with temp file
+     *
+     * @param productId
      * @throws IOException
      */
-
     public void deleteProduct(int productId) throws IOException {
         ArrayList<String[]> products = getAllProducts();
 
@@ -214,7 +212,7 @@ public class ProductService {
                 tempWriter.write(existingEntry);
             } else {
                 // Log deleted ID for potential future reuse
-                FileWriter logWriter = new FileWriter ("ecommerce/data/deletedID.csv", true);
+                FileWriter logWriter = new FileWriter("ecommerce/data/deletedID.csv", true);
                 logWriter.write(productId + "\n");
                 logWriter.close();
             }
@@ -233,13 +231,14 @@ public class ProductService {
             System.out.println("Failed to delete product: ID " + productId);
         }
     }
+
     /**
      * Returns a human-readable string listing all products in the system
      * formatted for display in the Admin GUI
+     *
      * @return
      * @throws IOException
      */
-
     public String displayProducts() throws IOException {
         StringBuilder productList = new StringBuilder();
         ArrayList<String[]> products = getAllProducts();
@@ -249,7 +248,7 @@ public class ProductService {
             productList.append("ID: ").append(product[0])
                     .append(" | Name: ").append(product[1])
                     .append(" | Category: ").append(product[2])
-                    .append(" | Price: $").append(product[3])
+                    .append(" | Price: $").append(String.format("%.2f", Double.valueOf(product[3]))) //format price to 2 decimal places
                     .append(" | Stock: ").append(product[4]).append("\n");
         }
         return productList.toString();

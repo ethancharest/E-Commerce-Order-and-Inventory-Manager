@@ -37,15 +37,17 @@ public class LoginFrame extends JFrame implements ActionListener {
         // Username label and input field
         panel.add(new JLabel("Username:"));
         userField = new JTextField();
+        userField.addActionListener(this);
         panel.add(userField);
 
         //Password label and masked input field
         panel.add(new JLabel("Password:"));
         passField = new JPasswordField();
+        passField.addActionListener(this);
         panel.add(passField);
 
         // Empty label for spacing 
-        panel.add(new JLabel()); 
+        panel.add(new JLabel());
         loginButton = new JButton("Login");
         loginButton.addActionListener(this);
         panel.add(loginButton);
@@ -56,6 +58,10 @@ public class LoginFrame extends JFrame implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        performLogin();
+    }
+
+    private void performLogin() {
         // Read user input from the text fields
         String username = userField.getText();
         String password = new String(passField.getPassword());
