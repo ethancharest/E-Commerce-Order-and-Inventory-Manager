@@ -239,10 +239,32 @@ public class ProductService {
      * @return
      * @throws IOException
      */
-    public String displayProducts() throws IOException {
+    public String displayProducts(int sortValue) throws IOException {
         StringBuilder productList = new StringBuilder();
         ArrayList<String[]> products = getAllProducts();
-
+        switch (sortValue) {
+            case 1: //sort by name
+                products.sort((a, b) -> a[1].compareToIgnoreCase(b[1]));
+                break;
+            case 2: //sort by category
+                products.sort((a, b) -> a[2].compareToIgnoreCase(b[2]));
+                break;
+            case 3: //sort by price low to high
+                products.sort((a, b) -> Double.compare(Double.parseDouble(a[3]), Double.parseDouble(b[3])));
+                break;
+            case 4: //sort by price high to low
+                products.sort((a, b) -> Double.compare(Double.parseDouble(b[3]), Double.parseDouble(a[3])));
+                break;
+            case 5: //sort by stock low to high
+                products.sort((a, b) -> Integer.compare(Integer.parseInt(a[4]), Integer.parseInt(b[4])));
+                break;
+            case 6: //sort by stock high to low
+                products.sort((a, b) -> Integer.compare(Integer.parseInt(b[4]), Integer.parseInt(a[4])));
+                break;
+            default:
+                //no sorting
+                break;
+        }
         // Build one line per product using labeled feilds 
         for (String[] product : products) {
             productList.append("ID: ").append(product[0])

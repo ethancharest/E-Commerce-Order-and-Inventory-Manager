@@ -6,8 +6,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
-import ecommerce.model.Role;
 
 public class AdminFrame extends JFrame implements ActionListener {
 
@@ -17,14 +15,19 @@ public class AdminFrame extends JFrame implements ActionListener {
     private JButton updateProductBtn;      // Button
     private JButton deleteProductBtn;      // Button
     private JButton viewProductsBtn;       // Button
+    private JComboBox<String> viewFiltersBtn;       // Dropdown for filters
     private JButton viewOrdersBtn;         // Button
     private JButton logoutBtn;             // Button
     private JTextArea displayArea;         // Area to display information
     private JScrollPane scrollPane;        // Scroll pane for display area
+    private int filterOption;          // Current filter option
 
     public AdminFrame() throws IOException {
         // Initialize the ProductService
         productService = new ProductService();
+
+        // No filter by default
+        filterOption = 0;
 
         // Set up the frame
         setTitle("Admin Dashboard");
@@ -71,8 +74,10 @@ public class AdminFrame extends JFrame implements ActionListener {
         // Display welcome message, ensures panel isnt empty on launch
         displayWelcomeMessage();
     }
+
     /**
      * Creates the top panel containing all product/order management buttons
+     *
      * @return the button panel
      */
     private JPanel createButtonPanel() {
@@ -107,6 +112,13 @@ public class AdminFrame extends JFrame implements ActionListener {
         viewProductsBtn.setFont(new Font("Arial", Font.BOLD, 12));
         panel.add(viewProductsBtn);
 
+        // View Filters Button
+        viewFiltersBtn = new JComboBox<>(new String[]{"No Filter", "By Name", "By Category", "Price: Low to High", "Price: High to Low", "Stock: Low to High", "Stock: High to Low"});
+        viewFiltersBtn.addActionListener(this);
+        viewFiltersBtn.setFont(new Font("Arial", Font.BOLD, 12));
+        panel.add(viewFiltersBtn);
+        viewFiltersBtn.setVisible(false); // Hide filter dropdown until on view products page
+
         // View Orders Button
         viewOrdersBtn = new JButton("View All Orders");
         viewOrdersBtn.addActionListener(this);
@@ -117,11 +129,12 @@ public class AdminFrame extends JFrame implements ActionListener {
     }
 
     /**
-     * Displays a welcome message in display area, thank you program, very nice of you to welcome me so kindly!
+     * Displays a welcome message in display area, thank you program, very nice
+     * of you to welcome me so kindly!
      */
     private void displayWelcomeMessage() {
         displayArea.setText("========================================\n");
-        displayArea.append("Welcome to Admin Dashboard!\n"); 
+        displayArea.append("Welcome to Admin Dashboard!\n");
         displayArea.append("========================================\n\n");
         displayArea.append("You have access to the following features:\n");
         displayArea.append("• Add Product\n");
@@ -133,10 +146,14 @@ public class AdminFrame extends JFrame implements ActionListener {
     }
 
     /**
-     * Event handles for button clicks 
+     * Event handles for button clicks
      */
     @Override
     public void actionPerformed(ActionEvent e) {
+        if (viewFiltersBtn.isVisible() && e.getSource() != viewFiltersBtn) {
+            // Hide filter dropdown when not viewing products
+            viewFiltersBtn.setVisible(false);
+        }
         try {
             if (e.getSource() == addProductBtn) {
                 handleAddProduct();
@@ -146,6 +163,8 @@ public class AdminFrame extends JFrame implements ActionListener {
                 handleDeleteProduct();
             } else if (e.getSource() == viewProductsBtn) {
                 handleViewProducts();
+            } else if (e.getSource() == viewFiltersBtn) {
+                handleViewFilters();
             } else if (e.getSource() == viewOrdersBtn) {
                 handleViewOrders();
             } else if (e.getSource() == logoutBtn) {
@@ -157,10 +176,12 @@ public class AdminFrame extends JFrame implements ActionListener {
             ex.printStackTrace();
         }
     }
+
     /**
-     * Opens a dialog that lets the admin enter data for a new product
-     * Validates basic feilds and uses ProductService to add product
-     * @throws IOException 
+     * Opens a dialog that lets the admin enter data for a new product Validates
+     * basic feilds and uses ProductService to add product
+     *
+     * @throws IOException
      */
     private void handleAddProduct() throws IOException {
         // Create a dialog for adding a product
@@ -239,9 +260,11 @@ public class AdminFrame extends JFrame implements ActionListener {
         dialog.add(panel);
         dialog.setVisible(true);
     }
+
     /**
-     * Opens a dialog to update an existing product by ID
-     * Admin must provide ID plus the new feild values 
+     * Opens a dialog to update an existing product by ID Admin must provide ID
+     * plus the new feild values
+     *
      * @throws IOException
      */
     private void handleUpdateProduct() throws IOException {
@@ -325,8 +348,10 @@ public class AdminFrame extends JFrame implements ActionListener {
         dialog.add(panel);
         dialog.setVisible(true);
     }
+
     /**
-     * Prompts the admin for a product ID and deletes that product if confirmed 
+     * Prompts the admin for a product ID and deletes that product if confirmed
+     *
      * @throws IOException
      */
     private void handleDeleteProduct() throws IOException {
@@ -352,11 +377,14 @@ public class AdminFrame extends JFrame implements ActionListener {
     }
 
     /**
-     * Loads product information from ProductService and displays it in the text area
+     * Loads product information from ProductService and displays it in the text
+     * area
+     *
      * @throws IOException
      */
     private void handleViewProducts() throws IOException {
-        String products = productService.displayProducts();
+        viewFiltersBtn.setVisible(true); // Show filter dropdown when viewing products
+        String products = productService.displayProducts(filterOption);
         displayArea.setText("========================================\n");
         displayArea.append("CURRENT PRODUCTS\n");
         displayArea.append("========================================\n\n");
@@ -364,7 +392,43 @@ public class AdminFrame extends JFrame implements ActionListener {
     }
 
     /**
-     * Placehoder for VIEW ALL ORDERS feature, this will be changed later 
+     * Sorts and displays products based on selected filter
+     *
+     * @throws IOException
+     */
+    private void handleViewFilters() throws IOException {
+        String selectedFilter = (String) viewFiltersBtn.getSelectedItem();
+        int sortOption;
+
+        switch (selectedFilter) {
+            case "By Name":
+                sortOption = 1;
+                break;
+            case "By Category":
+                sortOption = 2;
+                break;
+            case "Price: Low to High":
+                sortOption = 3;
+                break;
+            case "Price: High to Low":
+                sortOption = 4;
+                break;
+            case "Stock: Low to High":
+                sortOption = 5;
+                break;
+            case "Stock: High to Low":
+                sortOption = 6;
+                break;
+            default:
+                sortOption = 0; // No Filter
+        }
+
+        filterOption = sortOption; // Update current filter option
+        handleViewProducts();
+    }
+
+    /**
+     * Placehoder for VIEW ALL ORDERS feature, this will be changed later
      */
     private void handleViewOrders() {
         displayArea.setText("========================================\n");
@@ -396,7 +460,8 @@ public class AdminFrame extends JFrame implements ActionListener {
     }
 
     /**
-     * Helper method to show success message 
+     * Helper method to show success message
+     *
      * @param message
      */
     private void showSuccess(String message) {
@@ -405,6 +470,7 @@ public class AdminFrame extends JFrame implements ActionListener {
 
     /**
      * Helper method to show error message
+     *
      * @param message
      */
     private void showError(String message) {

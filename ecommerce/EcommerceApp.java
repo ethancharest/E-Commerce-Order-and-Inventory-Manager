@@ -1,7 +1,6 @@
 package ecommerce;
 
 import ecommerce.model.*;
-import ecommerce.service.*;
 import ecommerce.ui.*;
 import java.io.IOException;
 import java.util.Scanner;
@@ -13,9 +12,10 @@ public class EcommerceApp {
     private static LoginFrame loginFrame;
 
     public static void main(String[] args) throws IOException {
-/**
- * Removed the admin console prompts and transferred them into AdminFrame() 
- */
+        /**
+         * Removed the admin console prompts and transferred them into
+         * AdminFrame()
+         */
         // Create the login frame on the Swing event thread
         SwingUtilities.invokeLater(() -> {
             loginFrame = new LoginFrame(role -> {
@@ -42,7 +42,14 @@ public class EcommerceApp {
             });
             return; // GUI will handle further interactions
         } else if (role == Role.CUSTOMER) {
-            System.out.println("Welcome Customer! Product browsing and ordering features are under development.");
+            SwingUtilities.invokeLater(() -> {
+                try {
+                    new UserFrame();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+            return; // GUI will handle further interactions
         } else {
             System.out.println("No role found. Exiting application.");
         }
