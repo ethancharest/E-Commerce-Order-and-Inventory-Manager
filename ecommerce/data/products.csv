@@ -1,8 +1,8 @@
 id, name, category, price, stock
 101,Wireless Mouse,Electronics,25.99,150
-102,Pillow,Home,15.99,100
+102,Pillow,Home,15.99,80
 103,Coffee Maker,Appliances,49.99,75
 104,Running Shoes,Sports,89.99,60
 105,Smartphone,Electronics,699.99,40
-106,horse,animal,999.99,2
+106,Horse,Animal,999.99,2
 107,computer,electronics,10000.0,100

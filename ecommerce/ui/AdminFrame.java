@@ -384,7 +384,7 @@ public class AdminFrame extends JFrame implements ActionListener {
      */
     private void handleViewProducts() throws IOException {
         viewFiltersBtn.setVisible(true); // Show filter dropdown when viewing products
-        String products = productService.displayProducts(filterOption);
+        String products = productService.displayProducts(filterOption, true);
         displayArea.setText("========================================\n");
         displayArea.append("CURRENT PRODUCTS\n");
         displayArea.append("========================================\n\n");

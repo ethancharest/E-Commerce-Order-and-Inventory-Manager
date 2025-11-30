@@ -27,15 +27,17 @@ public class SimpleTaxCalc {
         //data in csv from https://taxfoundation.org/data/all/state/sales-tax-rates/
         Scanner fileReader = new Scanner(file);
 
-        fileReader.next(); //skip header
+        fileReader.nextLine(); //skip header
 
         //parse each line into state --> rate entry
         while (fileReader.hasNextLine()) {
             String line = fileReader.nextLine();
             String[] parts = line.split(",");
             String state = parts[0];
-            double rate = Double.parseDouble(parts[1]);
+            String stateCode = parts[1];
+            double rate = Double.parseDouble(parts[2]);
             stateTaxRates.put(state, rate);
+            stateTaxRates.put(stateCode, rate);
         }
         fileReader.close();
     }
@@ -43,15 +45,20 @@ public class SimpleTaxCalc {
     /**
      * Calculates the sales tax for a given address and amount
      *
-     * @param adress The shipping address to determine tax rate
+     * @param address The shipping address to determine tax rate
      * @param amount The amount to calculate tax on
      * @return The calculated tax amount, or 0.0 if no rate found
      *
      * If a state code is missing or has no rate, returns 0.0 tax rather than
      * throwing an exception.
      */
-    public double calculateTax(Address adress, double amount) {
-        Double rate = stateTaxRates.get(adress.getState());
-        return amount * rate;
+    public double calculateTax(Address address, double amount) {
+        try {
+            Double rate = stateTaxRates.get(address.getState());
+            return amount * rate;
+        } catch (Exception e) {
+            return 0.0;
+        }
+
     }
 }

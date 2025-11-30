@@ -1,6 +1,7 @@
 package ecommerce.model;
 
-import java.util.ArrayList;
+import ecommerce.service.ProductService;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -79,8 +80,28 @@ public class Cart {
     /**
      * Returns a list of all CartItems in the cart.
      */
-    public ArrayList<CartItem> list() {
-        return new ArrayList<>(items.values());
+    public String display() {
+        StringBuilder productsInCart = new StringBuilder();
+        for (CartItem item : items.values()) {
+            productsInCart.append(item.getProduct().getName())
+                    .append(" - Quantity: ")
+                    .append(item.getQuantity())
+                    .append(", Total Price: $")
+                    .append(String.format("%.2f", item.getTotalPrice()))
+                    .append("\n");
+        }
+        productsInCart.append("Cart Subtotal: $").append(String.format("%.2f", subtotal())).append("\n");
+        return productsInCart.toString();
+    }
+
+    public void updateProductsStock(ProductService productService) throws IOException {
+        for (CartItem item : items.values()) {
+            productService.updateProduct(Integer.parseInt(item.getProduct().getId()),
+                    item.getProduct().getName(),
+                    item.getProduct().getCategory(),
+                    item.getProduct().getPrice(),
+                    item.getProduct().getAvailableStock() - item.getQuantity());
+        }
     }
 
     // Returns true if the cart is empty

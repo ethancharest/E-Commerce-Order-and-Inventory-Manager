@@ -2,7 +2,10 @@ package ecommerce.ui;
 //this class should contain the GUI which is what a CUSTOMER would see when logged in
 //can browse products (apply filters like price) and place orders; browse and order products + see past orders
 
+import ecommerce.model.Address;
+import ecommerce.model.Cart;
 import ecommerce.service.ProductService;
+import ecommerce.service.SimpleTaxCalc;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
@@ -18,10 +21,15 @@ public class UserFrame extends JFrame implements ActionListener {
     private JButton viewProductsBtn;       // Button
     private JComboBox<String> viewFiltersBtn;       // Dropdown for filters
     private JButton viewOrdersBtn;         // Button
+    private JButton viewCartBtn;          // Button
+    private JButton checkoutBtn;         // Button
     private JButton logoutBtn;             // Button
     private JTextArea displayArea;         // Area to display information
     private JScrollPane scrollPane;        // Scroll pane for display area
     private int filterOption;          // Current filter option
+    private Cart cart;                     // Customer's shopping cart
+    private Address address;               // Customer's address for orders
+    private SimpleTaxCalc taxCalculator; // Tax calculator based on address
 
     public UserFrame() throws IOException {
         // Initialize the ProductService
@@ -29,6 +37,13 @@ public class UserFrame extends JFrame implements ActionListener {
 
         // No filter by default
         filterOption = 0;
+
+        // Initialize the customer's cart
+        cart = new Cart();
+
+        taxCalculator = new SimpleTaxCalc();
+
+        address = null; // No address initially
 
         // Set up the frame
         setTitle("User Dashboard");
@@ -121,10 +136,22 @@ public class UserFrame extends JFrame implements ActionListener {
         viewFiltersBtn.setVisible(false); // Hide filter dropdown until on view products page
 
         // View Orders Button
-        viewOrdersBtn = new JButton("View All Orders");
+        viewOrdersBtn = new JButton("View Past Orders");
         viewOrdersBtn.addActionListener(this);
         viewOrdersBtn.setFont(new Font("Arial", Font.BOLD, 12));
         panel.add(viewOrdersBtn);
+
+        // View Cart Button
+        viewCartBtn = new JButton("View Cart");
+        viewCartBtn.addActionListener(this);
+        viewCartBtn.setFont(new Font("Arial", Font.BOLD, 12));
+        panel.add(viewCartBtn);
+
+        // Checkout Button 
+        checkoutBtn = new JButton("Checkout");
+        checkoutBtn.addActionListener(this);
+        checkoutBtn.setFont(new Font("Arial", Font.BOLD, 12));
+        panel.add(checkoutBtn);
 
         return panel;
     }
@@ -138,11 +165,11 @@ public class UserFrame extends JFrame implements ActionListener {
         displayArea.append("Welcome to Customer Dashboard!\n");
         displayArea.append("========================================\n\n");
         displayArea.append("You have access to the following features:\n");
-        displayArea.append("• Add Product\n");
-        displayArea.append("• Update Product\n");
-        displayArea.append("• Delete Product\n");
-        displayArea.append("• View Products\n");
-        displayArea.append("• View All Orders\n\n");
+        displayArea.append("• Add Product to Cart\n");
+        displayArea.append("• Update Product in Cart\n");
+        displayArea.append("• Delete Product in Cart\n");
+        displayArea.append("• View Cart\n");
+        displayArea.append("• View Past Orders\n\n");
         displayArea.append("Please select an operation using the buttons above.\n");
     }
 
@@ -168,6 +195,11 @@ public class UserFrame extends JFrame implements ActionListener {
                 handleViewFilters();
             } else if (e.getSource() == viewOrdersBtn) {
                 handleViewOrders();
+            } else if (e.getSource() == viewCartBtn) {
+                handleViewCart();
+            } else if (e.getSource() == checkoutBtn) {
+                // Checkout functionality to be implemented
+                handleCheckout();
             } else if (e.getSource() == logoutBtn) {
                 handleLogout();
             }
@@ -199,49 +231,39 @@ public class UserFrame extends JFrame implements ActionListener {
         panel.add(nameLabel);
         panel.add(nameField);
 
-        JLabel categoryLabel = new JLabel("Category:");
-        JTextField categoryField = new JTextField();
-        panel.add(categoryLabel);
-        panel.add(categoryField);
+        JLabel quantityLabel = new JLabel("Quantity:");
+        JTextField quantityField = new JTextField();
+        panel.add(quantityLabel);
+        panel.add(quantityField);
 
-        JLabel priceLabel = new JLabel("Price:");
-        JTextField priceField = new JTextField();
-        panel.add(priceLabel);
-        panel.add(priceField);
-
-        JLabel stockLabel = new JLabel("Stock Quantity:");
-        JTextField stockField = new JTextField();
-        panel.add(stockLabel);
-        panel.add(stockField);
-
-        JButton submitBtn = new JButton("Add Product");
+        JButton submitBtn = new JButton("Add Product to Cart");
         JButton cancelBtn = new JButton("Cancel");
 
         //Lamda used for cleaner event handling inside the dialog
         submitBtn.addActionListener(ev -> {
             try {
                 String name = nameField.getText().trim();
-                String category = categoryField.getText().trim();
-                String priceStr = priceField.getText().trim();
-                String stockStr = stockField.getText().trim();
+                String quantityStr = quantityField.getText().trim();
 
                 //Basic Valiation: require all feilds to be filled in 
-                if (name.isEmpty() || category.isEmpty() || priceStr.isEmpty() || stockStr.isEmpty()) {
+                if (name.isEmpty() || quantityStr.isEmpty()) {
                     showError("Please fill in all fields.");
                     return;
                 }
 
-                double price = Double.parseDouble(priceStr);
-                int stock = Integer.parseInt(stockStr);
+                int quantity = Integer.parseInt(quantityStr);
 
-                //Additional Validation: price and stock must be non-negative
-                if (price < 0 || stock < 0) {
-                    showError("Price and stock must be non-negative.");
+                //Additional Validation: price and quantity must be non-negative
+                if (quantity <= 0) {
+                    showError("Quantity must be positive integer.");
+                    return;
+                } else if (quantity > productService.getProductByName(name).getAvailableStock()) {
+                    showError("Requested quantity exceeds available stock.");
                     return;
                 }
 
                 // Delegate actual product creation to ProductService
-                productService.addProduct(name, category, price, stock);
+                cart.add(productService.getProductByName(name), quantity);
                 displayArea.setText("✓ Product added successfully: " + name + "\n");
                 dialog.dispose();
                 showSuccess("Product added successfully!");
@@ -277,65 +299,47 @@ public class UserFrame extends JFrame implements ActionListener {
         JPanel panel = new JPanel(new GridLayout(6, 2, 10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
-        JLabel idLabel = new JLabel("Product ID:");
-        JTextField idField = new JTextField();
-        panel.add(idLabel);
-        panel.add(idField);
-
         JLabel nameLabel = new JLabel("Product Name:");
         JTextField nameField = new JTextField();
         panel.add(nameLabel);
         panel.add(nameField);
 
-        JLabel categoryLabel = new JLabel("Category:");
-        JTextField categoryField = new JTextField();
-        panel.add(categoryLabel);
-        panel.add(categoryField);
-
-        JLabel priceLabel = new JLabel("Price:");
-        JTextField priceField = new JTextField();
-        panel.add(priceLabel);
-        panel.add(priceField);
-
-        JLabel stockLabel = new JLabel("Stock Quantity:");
-        JTextField stockField = new JTextField();
-        panel.add(stockLabel);
-        panel.add(stockField);
+        JLabel quantityLabel = new JLabel("Quantity:");
+        JTextField quantityField = new JTextField();
+        panel.add(quantityLabel);
+        panel.add(quantityField);
 
         JButton submitBtn = new JButton("Update Product");
         JButton cancelBtn = new JButton("Cancel");
 
         submitBtn.addActionListener(ev -> {
             try {
-                String idStr = idField.getText().trim();
                 String name = nameField.getText().trim();
-                String category = categoryField.getText().trim();
-                String priceStr = priceField.getText().trim();
-                String stockStr = stockField.getText().trim();
+                String quantityStr = quantityField.getText().trim();
 
                 // All feilds required for an update 
-                if (idStr.isEmpty() || name.isEmpty() || category.isEmpty() || priceStr.isEmpty()
-                        || stockStr.isEmpty()) {
+                if (name.isEmpty() || quantityStr.isEmpty()) {
                     showError("Please fill in all fields.");
                     return;
                 }
 
-                int id = Integer.parseInt(idStr);
-                double price = Double.parseDouble(priceStr);
-                int stock = Integer.parseInt(stockStr);
+                int quantity = Integer.parseInt(quantityStr);
 
-                if (price < 0 || stock < 0) {
-                    showError("Price and stock must be non-negative.");
+                if (quantity <= 0) {
+                    showError("Quantity must be positive integer.");
+                    return;
+                } else if (quantity > productService.getProductByName(name).getAvailableStock()) {
+                    showError("Requested quantity exceeds available stock.");
                     return;
                 }
 
-                // Delegate update to ProductService
-                productService.updateProduct(id, name, category, price, stock);
-                displayArea.setText("✓ Product updated successfully: ID " + id + "\n");
+                // Delegate update to Cart
+                cart.setCartQuantity(productService.getProductByName(name).getId(), quantity);
+                displayArea.setText("✓ Product updated successfully: " + name + "\n");
                 dialog.dispose();
                 showSuccess("Product updated successfully!");
             } catch (NumberFormatException ex) {
-                showError("Please enter valid numbers for ID, price, and stock.");
+                showError("Please enter valid numbers for name and quantity.");
             } catch (IOException ex) {
                 showError("Error updating product: " + ex.getMessage());
             }
@@ -356,23 +360,22 @@ public class UserFrame extends JFrame implements ActionListener {
      * @throws IOException
      */
     private void handleDeleteProduct() throws IOException {
-        String idStr = JOptionPane.showInputDialog(this, "Enter the product ID to delete:", "Delete Product",
+        String nameStr = JOptionPane.showInputDialog(this, "Enter the product name to delete:", "Delete Product",
                 JOptionPane.QUESTION_MESSAGE);
 
         // Only happens if the admin didnt cancel and typed something 
-        if (idStr != null && !idStr.trim().isEmpty()) {
+        if (nameStr != null && !nameStr.trim().isEmpty()) {
             try {
-                int id = Integer.parseInt(idStr);
                 int confirm = JOptionPane.showConfirmDialog(this,
-                        "Are you sure you want to delete product ID " + id + "?", "Confirm Delete",
+                        "Are you sure you want to delete product " + nameStr + " from cart?", "Confirm Delete",
                         JOptionPane.YES_NO_OPTION);
                 if (confirm == JOptionPane.YES_OPTION) {
-                    productService.deleteProduct(id);
-                    displayArea.setText("✓ Product deleted successfully: ID " + id + "\n");
-                    showSuccess("Product deleted successfully!");
+                    cart.remove(productService.getProductByName(nameStr).getId());
+                    displayArea.setText("✓ Product removed successfully: " + nameStr + "\n");
+                    showSuccess("Product removed successfully!");
                 }
             } catch (NumberFormatException ex) {
-                showError("Please enter a valid product ID.");
+                showError("Please enter a valid product name.");
             }
         }
     }
@@ -385,7 +388,7 @@ public class UserFrame extends JFrame implements ActionListener {
      */
     private void handleViewProducts() throws IOException {
         viewFiltersBtn.setVisible(true); // Show filter dropdown when viewing products
-        String products = productService.displayProducts(filterOption);
+        String products = productService.displayProducts(filterOption, false);
         displayArea.setText("========================================\n");
         displayArea.append("CURRENT PRODUCTS\n");
         displayArea.append("========================================\n\n");
@@ -436,6 +439,105 @@ public class UserFrame extends JFrame implements ActionListener {
         displayArea.append("========================================\n\n");
         displayArea.append("View all orders feature is under development.\n");
         displayArea.append("This feature will display all customer orders in the system.\n");
+    }
+
+    /**
+     * Displays the contents of the customer's cart
+     */
+    private void handleViewCart() {
+        displayArea.setText("========================================\n");
+        displayArea.append("YOUR SHOPPING CART\n");
+        displayArea.append("========================================\n\n");
+        String cartContents = cart.display();
+        displayArea.append(cartContents.isEmpty() ? "Your cart is empty.\n" : cartContents);
+    }
+
+    /**
+     * Placeholder for checkout functionality
+     */
+    private void handleCheckout() {
+        int beginCheckout = JOptionPane.showConfirmDialog(this,
+                "Are you ready to checkout?", "Confirm Checkout",
+                JOptionPane.YES_NO_OPTION);
+        if (beginCheckout == JOptionPane.YES_OPTION && address == null) {
+            JDialog dialog = new JDialog(this, "Address", true);
+            dialog.setSize(400, 350);
+            dialog.setLocationRelativeTo(this);
+            dialog.setResizable(false);
+
+            JPanel panel = new JPanel(new GridLayout(6, 2, 10, 10));
+            panel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+
+            JLabel streetLabel = new JLabel("Street:");
+            JTextField streetField = new JTextField();
+            panel.add(streetLabel);
+            panel.add(streetField);
+
+            JLabel cityLabel = new JLabel("City:");
+            JTextField cityField = new JTextField();
+            panel.add(cityLabel);
+            panel.add(cityField);
+
+            JLabel stateLabel = new JLabel("State:");
+            JTextField stateField = new JTextField();
+            panel.add(stateLabel);
+            panel.add(stateField);
+
+            JLabel zipCodeLabel = new JLabel("Zip Code:");
+            JTextField zipCodeField = new JTextField();
+            panel.add(zipCodeLabel);
+            panel.add(zipCodeField);
+
+            JButton submitBtn = new JButton("Confirm Address");
+            JButton cancelBtn = new JButton("Cancel");
+
+            submitBtn.addActionListener(ev -> {
+                try {
+                    String street = streetField.getText().trim();
+                    String city = cityField.getText().trim();
+                    String state = stateField.getText().trim();
+                    String zipCode = zipCodeField.getText().trim();
+
+                    // All feilds required for an update 
+                    if (street.isEmpty() || city.isEmpty() || state.isEmpty() || zipCode.isEmpty()) {
+                        showError("Please fill in all fields.");
+                        return;
+                    }
+                    address = new Address(street, city, state, zipCode);
+                    displayArea.setText("✓ Address updated successfully: " + address.toString() + "\n");
+                    dialog.dispose();
+                    showSuccess("Address updated successfully!");
+                } catch (NumberFormatException ex) {
+                    showError("Please enter valid address.");
+                }
+            });
+
+            cancelBtn.addActionListener(ev -> dialog.dispose());
+
+            panel.add(submitBtn);
+            panel.add(cancelBtn);
+
+            dialog.add(panel);
+            dialog.setVisible(true);
+        }
+        double tax = taxCalculator.calculateTax(address, cart.subtotal());
+        double totalPrice = tax + cart.subtotal();
+        String taxStr = String.format("%.2f", tax);
+        String totalPriceStr = String.format("%.2f", totalPrice);
+        String subtotalStr = String.format("%.2f", cart.subtotal());
+        int confirmCheckout = JOptionPane.showConfirmDialog(this, "Are you sure you want to checkout?\nSubtotal: " + subtotalStr + "\nTax: " + taxStr + "\nTotal: " + totalPriceStr, "Confirm Logout",
+                JOptionPane.YES_NO_OPTION);
+        if (confirmCheckout == JOptionPane.YES_OPTION) {
+            displayArea.setText("✓ Checkout complete! Total charged: $" + totalPriceStr + "\n");
+            try {
+                cart.updateProductsStock(productService);
+            } catch (IOException ex) {
+                showError("Error during checkout: " + ex.getMessage());
+            }
+            cart.clear();
+            //still need to implement actually placing the order and saving it to orders.csv etc
+            showSuccess("Checkout complete! Thank you for your purchase.");
+        }
     }
 
     private void handleLogout() {

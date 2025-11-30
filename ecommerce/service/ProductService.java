@@ -1,6 +1,7 @@
 package ecommerce.service;
 //this class should handle product-related operations for ADMINS
 
+import ecommerce.model.Product;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -18,12 +19,17 @@ public class ProductService {
     // Reader used when loading products from the CSV
     private Scanner reader;
 
+    private ArrayList<Product> products;
+
     public ProductService() throws IOException {
         // Itialize the file pointing to the products CSV
         productFile = new File("ecommerce/data/products.csv");
 
         // Open writer in append mode so we can add products without overwriting the file 
         writer = new FileWriter(productFile, true);
+
+        products = new ArrayList<>();
+        getAllProducts(); // Load existing products into memory
     }
 
     /**
@@ -41,8 +47,7 @@ public class ProductService {
         int maxID = 0;
 
         // Load all products so we can inspect their IDs
-        ArrayList<String[]> products = getAllProducts();
-
+        //ArrayList<String[]> products = getAllProducts();
         // reader = new Scanner("ecommerce/data/deletedID.csv");
         // writer = new FileWriter("ecommerce/data/deletedID.csv", true);
         // FileWriter tempWriter = new FileWriter("ecommerce/data/deletedID.csv");
@@ -71,8 +76,8 @@ public class ProductService {
         //     return maxID;
         // }
         // Find the maximum ID currently in the products list
-        for (String[] product : products) {
-            int id = Integer.parseInt(product[0]);
+        for (Product product : products) {
+            int id = Integer.parseInt(product.getId());
             if (id > maxID) {
                 maxID = id;
             }
@@ -90,9 +95,8 @@ public class ProductService {
      * @return list of all products
      * @throws IOException
      */
-    private ArrayList<String[]> getAllProducts() throws IOException {
-        ArrayList<String[]> products = new ArrayList<>();
-
+    private void getAllProducts() throws IOException {
+        products.clear();
         // Open scanner on the products file 
         reader = new Scanner(productFile);
 
@@ -103,13 +107,20 @@ public class ProductService {
         while (reader.hasNextLine()) {
             String line = reader.nextLine();
             String[] parts = line.split(",");
-            products.add(parts);
+            products.add(new Product(parts[0], parts[1], parts[2], Double.parseDouble(parts[3]), Integer.parseInt(parts[4])));
         }
 
         // Close reader 
         reader.close();
+    }
 
-        return products;
+    public Product getProductByName(String name) throws IOException {
+        for (Product product : products) {
+            if (product.getName().equalsIgnoreCase(name)) {
+                return product;
+            }
+        }
+        return null; // Product not found
     }
 
     /**
@@ -134,6 +145,7 @@ public class ProductService {
         writer.flush();
 
         System.out.println("Product added successfully: " + name);
+        getAllProducts(); // Refresh the in-memory products list
     }
 
     /**
@@ -150,8 +162,6 @@ public class ProductService {
      * @throws IOException
      */
     public void updateProduct(int productId, String name, String category, double price, int stock) throws IOException {
-        ArrayList<String[]> products = getAllProducts();
-
         // Temporary file that will hold updated contents
         FileWriter tempWriter = new FileWriter("ecommerce/data/temp_products.csv");
 
@@ -159,15 +169,15 @@ public class ProductService {
         tempWriter.write("id, name, category, price, stock"); //header
 
         // Rewrite each product row, updating only the one with the matching ID
-        for (String[] product : products) {
-            int id = Integer.parseInt(product[0]);
+        for (Product product : products) {
+            int id = Integer.parseInt(product.getId());
             if (id == productId) {
                 //Build updated line
                 String updatedEntry = "\n" + productId + "," + name + "," + category + "," + price + "," + stock;
                 tempWriter.write(updatedEntry);
             } else {
                 // Keep existing row unchanged
-                String existingEntry = "\n" + String.join(",", product);
+                String existingEntry = "\n" + product.getId() + "," + product.getName() + "," + product.getCategory() + "," + product.getPrice() + "," + product.getAvailableStock();
                 tempWriter.write(existingEntry);
             }
         }
@@ -187,6 +197,7 @@ public class ProductService {
         } else {
             System.out.println("Failed to update product: ID " + productId);
         }
+        getAllProducts(); // Refresh the in-memory products list
     }
 
     /**
@@ -198,17 +209,15 @@ public class ProductService {
      * @throws IOException
      */
     public void deleteProduct(int productId) throws IOException {
-        ArrayList<String[]> products = getAllProducts();
-
         // Temp file to hold remaining products
         FileWriter tempWriter = new FileWriter("ecommerce/data/temp_products.csv");
         tempWriter.write("id, name, category, price, stock"); //header
 
         // Copy every product except the one being deleted 
-        for (String[] product : products) {
-            int id = Integer.parseInt(product[0]);
+        for (Product product : products) {
+            int id = Integer.parseInt(product.getId());
             if (id != productId) {
-                String existingEntry = "\n" + String.join(",", product);
+                String existingEntry = "\n" + product.getId() + "," + product.getName() + "," + product.getCategory() + "," + product.getPrice() + "," + product.getAvailableStock();
                 tempWriter.write(existingEntry);
             } else {
                 // Log deleted ID for potential future reuse
@@ -230,48 +239,58 @@ public class ProductService {
         } else {
             System.out.println("Failed to delete product: ID " + productId);
         }
+        getAllProducts(); // Refresh the in-memory products list
     }
 
     /**
      * Returns a human-readable string listing all products in the system
-     * formatted for display in the Admin GUI
+     * formatted for display in GUI
      *
      * @return
      * @throws IOException
      */
-    public String displayProducts(int sortValue) throws IOException {
+    public String displayProducts(int sortValue, boolean isAdmin) throws IOException {
         StringBuilder productList = new StringBuilder();
-        ArrayList<String[]> products = getAllProducts();
         switch (sortValue) {
             case 1: //sort by name
-                products.sort((a, b) -> a[1].compareToIgnoreCase(b[1]));
+                products.sort((a, b) -> a.getName().compareToIgnoreCase(b.getName()));
                 break;
             case 2: //sort by category
-                products.sort((a, b) -> a[2].compareToIgnoreCase(b[2]));
+                products.sort((a, b) -> a.getCategory().compareToIgnoreCase(b.getCategory()));
                 break;
             case 3: //sort by price low to high
-                products.sort((a, b) -> Double.compare(Double.parseDouble(a[3]), Double.parseDouble(b[3])));
+                products.sort((a, b) -> Double.compare(Double.parseDouble(a.getPrice() + ""), Double.parseDouble(b.getPrice() + "")));
                 break;
             case 4: //sort by price high to low
-                products.sort((a, b) -> Double.compare(Double.parseDouble(b[3]), Double.parseDouble(a[3])));
+                products.sort((a, b) -> Double.compare(Double.parseDouble(b.getPrice() + ""), Double.parseDouble(a.getPrice() + "")));
                 break;
             case 5: //sort by stock low to high
-                products.sort((a, b) -> Integer.compare(Integer.parseInt(a[4]), Integer.parseInt(b[4])));
+                products.sort((a, b) -> Integer.compare(Integer.parseInt(a.getAvailableStock() + ""), Integer.parseInt(b.getAvailableStock() + "")));
                 break;
             case 6: //sort by stock high to low
-                products.sort((a, b) -> Integer.compare(Integer.parseInt(b[4]), Integer.parseInt(a[4])));
+                products.sort((a, b) -> Integer.compare(Integer.parseInt(b.getAvailableStock() + ""), Integer.parseInt(a.getAvailableStock() + "")));
                 break;
             default:
                 //no sorting
                 break;
         }
-        // Build one line per product using labeled feilds 
-        for (String[] product : products) {
-            productList.append("ID: ").append(product[0])
-                    .append(" | Name: ").append(product[1])
-                    .append(" | Category: ").append(product[2])
-                    .append(" | Price: $").append(String.format("%.2f", Double.valueOf(product[3]))) //format price to 2 decimal places
-                    .append(" | Stock: ").append(product[4]).append("\n");
+        // Build one line per product using labeled fields 
+        for (Product product : products) {
+            productList.append("Name: ").append(product.getName())
+                    .append(" | Category: ").append(product.getCategory())
+                    .append(" | Price: $").append(String.format("%.2f", product.getPrice())); //format price to 2 decimal places
+
+            if (isAdmin) {
+                productList.append(" | ID: ").append(product.getId())
+                        .append(" | Stock: ").append(product.getAvailableStock());
+            } else if (product.getAvailableStock() > 10) {
+                productList.append(" | In Stock");
+            } else if (product.getAvailableStock() > 0) {
+                productList.append(" | Low Stock");
+            } else {
+                productList.append(" | Out of Stock");
+            }
+            productList.append("\n");
         }
         return productList.toString();
     }
