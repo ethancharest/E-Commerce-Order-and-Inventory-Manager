@@ -36,12 +36,12 @@ public class Order {
         this.orderId = orderService.generateOrderId();
         this.customerId = customerId;
         this.items = items;
-        this.createdAt = calendar.get(calendar.MONTH) + "/"
-                + calendar.get(calendar.DAY_OF_MONTH) + "/"
-                + calendar.get(calendar.YEAR) + " "
-                + calendar.get(calendar.HOUR_OF_DAY) + ":"
-                + calendar.get(calendar.MINUTE) + ":"
-                + calendar.get(calendar.SECOND);
+        this.createdAt = calendar.get(Calendar.MONTH + 1) + "/"
+                + calendar.get(Calendar.DAY_OF_MONTH) + "/"
+                + calendar.get(Calendar.YEAR) + " "
+                + calendar.get(Calendar.HOUR_OF_DAY) + ":"
+                + calendar.get(Calendar.MINUTE) + ":"
+                + calendar.get(Calendar.SECOND);
         this.total = total;
         this.status = OrderStatus.PROCESSED; // default
     }
