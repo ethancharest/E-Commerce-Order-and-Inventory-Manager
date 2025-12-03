@@ -4,6 +4,8 @@ package ecommerce.ui;
 
 import ecommerce.model.Address;
 import ecommerce.model.Cart;
+import ecommerce.model.Order;
+import ecommerce.service.OrderService;
 import ecommerce.service.ProductService;
 import ecommerce.service.SimpleTaxCalc;
 import java.awt.*;
@@ -30,10 +32,15 @@ public class UserFrame extends JFrame implements ActionListener {
     private Cart cart;                     // Customer's shopping cart
     private Address address;               // Customer's address for orders
     private SimpleTaxCalc taxCalculator; // Tax calculator based on address
+    private String usernameStr;
+    private OrderService orderService;
 
-    public UserFrame() throws IOException {
+    public UserFrame(String username) throws IOException {
+        this.usernameStr = username;
         // Initialize the ProductService
         productService = new ProductService();
+
+        orderService = new OrderService();
 
         // No filter by default
         filterOption = 0;
@@ -105,19 +112,19 @@ public class UserFrame extends JFrame implements ActionListener {
         panel.setPreferredSize(new Dimension(0, 120));
 
         // Add Product Button
-        addProductBtn = new JButton("Add Product");
+        addProductBtn = new JButton("Add Product to Cart");
         addProductBtn.addActionListener(this);
         addProductBtn.setFont(new Font("Arial", Font.BOLD, 12));
         panel.add(addProductBtn);
 
         // Update Product Button
-        updateProductBtn = new JButton("Update Product");
+        updateProductBtn = new JButton("Update Product in Cart");
         updateProductBtn.addActionListener(this);
         updateProductBtn.setFont(new Font("Arial", Font.BOLD, 12));
         panel.add(updateProductBtn);
 
         // Delete Product Button
-        deleteProductBtn = new JButton("Delete Product");
+        deleteProductBtn = new JButton("Delete Product from Cart");
         deleteProductBtn.addActionListener(this);
         deleteProductBtn.setFont(new Font("Arial", Font.BOLD, 12));
         panel.add(deleteProductBtn);
@@ -455,7 +462,7 @@ public class UserFrame extends JFrame implements ActionListener {
     /**
      * Placeholder for checkout functionality
      */
-    private void handleCheckout() {
+    private void handleCheckout() throws IOException {
         int beginCheckout = JOptionPane.showConfirmDialog(this,
                 "Are you ready to checkout?", "Confirm Checkout",
                 JOptionPane.YES_NO_OPTION);
@@ -534,6 +541,8 @@ public class UserFrame extends JFrame implements ActionListener {
             } catch (IOException ex) {
                 showError("Error during checkout: " + ex.getMessage());
             }
+            Order order = new Order(usernameStr, cart.getItems(), totalPrice);
+            orderService.processOrder(order);
             cart.clear();
             //still need to implement actually placing the order and saving it to orders.csv etc
             showSuccess("Checkout complete! Thank you for your purchase.");
@@ -548,9 +557,9 @@ public class UserFrame extends JFrame implements ActionListener {
             dispose();
             // Return to login screen, this can be removed if not needed
             try {
-                new LoginFrame(role -> {
+                new LoginFrame((role, username) -> {
                     try {
-                        new AdminFrame(); // or appropriate frame based on role, can be changed later
+                        new UserFrame(username); // or appropriate frame based on role, can be changed later
                     } catch (IOException e) {
                         e.printStackTrace();
                     }

@@ -2,6 +2,7 @@ package ecommerce.model;
 
 import ecommerce.service.ProductService;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -102,6 +103,10 @@ public class Cart {
                     item.getProduct().getPrice(),
                     item.getProduct().getAvailableStock() - item.getQuantity());
         }
+    }
+
+    public ArrayList<CartItem> getItems() {
+        return new ArrayList<>(items.values());
     }
 
     // Returns true if the cart is empty

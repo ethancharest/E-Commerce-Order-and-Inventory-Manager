@@ -1,7 +1,8 @@
 package ecommerce.model;
 
+import ecommerce.service.OrderService;
 import java.util.ArrayList;
-import java.util.Date; //try LocalDateTime if Date doesn't work
+import java.util.Calendar; //try LocalDateTime if Date doesn't work
 
 public class Order {
 
@@ -12,39 +13,62 @@ public class Order {
      */
     private String orderId;
     private String customerId;
-    private ArrayList<OrderItem> items;
-    private Date createdAt;
-    private double subtotal;
-    private double tax;
+    private ArrayList<CartItem> items;
+    private String createdAt;
     private double total;
     private OrderStatus status; // e.g., PROCESSED, SHIPPED, DELIVERED
-    private Address shipTo;
+    private OrderService orderService;
+    private Calendar calendar = java.util.Calendar.getInstance();
 
     /**
      * Constructs a new Order object.
      *
      * @param orderId Unique identifier for the order
-     * @param customerId The ID of the customer who placed it
+     * @param customerId The ID (username) of the customer who placed it
      * @param items The products and quantities included
      * @param createdAt The timestamp of order creation
-     * @param subtotal The sum of all item prices before tax
-     * @param tax The calculated tax based on the shipping address
      * @param total The grand total (subtotal + tax)
-     * @param address Shipping destination
      *
      * Orders are set to PROCESSED status upon creation
      */
-    public Order(String orderId, String customerId, ArrayList<OrderItem> items, Date createdAt, double subtotal,
-            double tax, double total, Address address) {
-        this.orderId = orderId;
+    public Order(String customerId, ArrayList<CartItem> items, double total) {
+        orderService = new OrderService();
+        this.orderId = orderService.generateOrderId();
         this.customerId = customerId;
         this.items = items;
-        this.createdAt = createdAt;
-        this.subtotal = subtotal;
-        this.tax = tax;
+        this.createdAt = calendar.get(calendar.MONTH) + "/"
+                + calendar.get(calendar.DAY_OF_MONTH) + "/"
+                + calendar.get(calendar.YEAR) + " "
+                + calendar.get(calendar.HOUR_OF_DAY) + ":"
+                + calendar.get(calendar.MINUTE) + ":"
+                + calendar.get(calendar.SECOND);
         this.total = total;
         this.status = OrderStatus.PROCESSED; // default
-        this.shipTo = address;
+    }
+
+    // Getters and setters
+    public String getOrderId() {
+        return orderId;
+    }
+
+    public String getCustomerId() {
+        return customerId;
+    }
+
+    public ArrayList<CartItem> getItems() {
+        return items;
+    }
+
+    public String getCreatedAt() {
+        return createdAt;
+    }
+
+    public double getTotal() {
+        return total;
+    }
+
+    public OrderStatus getStatus() {
+        return status;
     }
 
 }

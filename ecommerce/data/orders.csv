@@ -1,1 +1,3 @@
 order id, customer id, total price, timestamp, status
+ORD1764725859678,jdoe,16.9494,11/2/2025 20:37:39,PROCESSED
+ORD1764725962160,jdoe,10600.0,11/2/2025 20:39:22,PROCESSED

@@ -446,7 +446,7 @@ public class AdminFrame extends JFrame implements ActionListener {
             dispose();
             // Return to login screen, this can be removed if not needed
             try {
-                new LoginFrame(role -> {
+                new LoginFrame((role, username) -> {
                     try {
                         new AdminFrame(); // or appropriate frame based on role, can be changed later
                     } catch (IOException e) {
