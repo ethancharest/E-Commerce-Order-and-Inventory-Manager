@@ -86,6 +86,14 @@ public class UserFrame extends JFrame implements ActionListener {
         logoutPanel.add(logoutBtn);
         mainPanel.add(logoutPanel, BorderLayout.SOUTH);
 
+        // Checkout Button 
+        checkoutBtn = new JButton("Checkout");
+        checkoutBtn.addActionListener(this);
+        checkoutBtn.setFont(new Font("Arial", Font.BOLD, 12));
+        checkoutBtn.setBackground(new Color(40, 167, 69)); // Green color
+        checkoutBtn.setForeground(Color.WHITE);
+        logoutPanel.add(checkoutBtn);
+
         add(mainPanel);
         // Pack and ensure layout updates before showing the frame, overrides to 800x600
         pack();
@@ -154,11 +162,11 @@ public class UserFrame extends JFrame implements ActionListener {
         viewCartBtn.setFont(new Font("Arial", Font.BOLD, 12));
         panel.add(viewCartBtn);
 
-        // Checkout Button 
-        checkoutBtn = new JButton("Checkout");
-        checkoutBtn.addActionListener(this);
-        checkoutBtn.setFont(new Font("Arial", Font.BOLD, 12));
-        panel.add(checkoutBtn);
+        // // Checkout Button 
+        // checkoutBtn = new JButton("Checkout");
+        // checkoutBtn.addActionListener(this);
+        // checkoutBtn.setFont(new Font("Arial", Font.BOLD, 12));
+        // panel.add(checkoutBtn);
 
         return panel;
     }
