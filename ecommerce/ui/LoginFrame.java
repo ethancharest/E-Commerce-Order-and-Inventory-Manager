@@ -18,11 +18,19 @@ public class LoginFrame extends JFrame implements ActionListener {
     private JButton loginButton;        // Login button
     private Role role;                  // stores authenticated user role
     private Consumer<Role> onLogin;     // callback that recieves the user role on successful login
+    private String usernameStr;
+    private Consumer<String> usernameCon; // callback that receives the username on successful login
+    private LoginSuccessListener listener;
 
-    public LoginFrame(Consumer<Role> onLogin) {
+    public LoginFrame(LoginSuccessListener listener) {
         // Initialize default role as NOTFOUND until authentication is successful
         role = Role.NOTFOUND;
         this.onLogin = onLogin;     // store the callback
+
+        usernameStr = "";
+        this.usernameCon = usernameCon; // store the username callback
+
+        this.listener = listener;
 
         setTitle("Login");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -37,15 +45,17 @@ public class LoginFrame extends JFrame implements ActionListener {
         // Username label and input field
         panel.add(new JLabel("Username:"));
         userField = new JTextField();
+        userField.addActionListener(this);
         panel.add(userField);
 
         //Password label and masked input field
         panel.add(new JLabel("Password:"));
         passField = new JPasswordField();
+        passField.addActionListener(this);
         panel.add(passField);
 
         // Empty label for spacing 
-        panel.add(new JLabel()); 
+        panel.add(new JLabel());
         loginButton = new JButton("Login");
         loginButton.addActionListener(this);
         panel.add(loginButton);
@@ -54,8 +64,17 @@ public class LoginFrame extends JFrame implements ActionListener {
         setVisible(true); // Display the window after construction 
     }
 
+    public interface LoginSuccessListener {
+
+        void onLoginSuccess(Role role, String username);
+    }
+
     @Override
     public void actionPerformed(ActionEvent e) {
+        performLogin();
+    }
+
+    private void performLogin() {
         // Read user input from the text fields
         String username = userField.getText();
         String password = new String(passField.getPassword());
@@ -71,7 +90,8 @@ public class LoginFrame extends JFrame implements ActionListener {
             } else {
                 //Successful login: notify user and pass role back to main app via callback
                 JOptionPane.showMessageDialog(this, "Authentication successful! Logged in as: " + username + " with role: " + role);
-                onLogin.accept(role); //Invoke the callback with the authenticated role
+                listener.onLoginSuccess(role, username);
+                dispose();
                 LoginFrame.this.dispose(); // activates startApp in EcommerceApp
             }
         } catch (FileNotFoundException e1) {  // Only thrown if the credentials file is missing

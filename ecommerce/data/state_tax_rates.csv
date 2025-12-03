@@ -1,0 +1,52 @@
+﻿State,State Abbreviation,Tax Rate
+Alabama,AL,0.04
+Alaska,AK,0
+Arizona,AZ,0.056
+Arkansas,AR,0.065
+California,CA,0.0725
+Colorado,CO,0.029
+Connecticut,CT,0.0635
+Delaware,DE,0
+Florida,FL,0.06
+Georgia,GA,0.04
+Hawaii,HI,0.04
+Idaho,ID,0.06
+Illinois,IL,0.0625
+Indiana,IN,0.07
+Iowa,IA,0.06
+Kansas,KS,0.065
+Kentucky,KY,0.06
+Louisiana,LA,0.05
+Maine,ME,0.055
+Maryland,MD,0.06
+Massachusetts,MA,0.0625
+Michigan,MI,0.06
+Minnesota,MN,0.06875
+Mississippi,MS,0.07
+Missouri,MO,0.04225
+Montana,MT,0
+Nebraska,NE,0.055
+Nevada,NV,0.0685
+New Hampshire,NH,0
+New Jersey,NJ,0.06625
+New Mexico,NM,0.04875
+New York,NY,0.04
+North Carolina,NC,0.0475
+North Dakota,ND,0.05
+Ohio,OH,0.0575
+Oklahoma,OK,0.045
+Oregon,OR,0
+Pennsylvania,PA,0.06
+Rhode Island,RI,0.07
+South Carolina,SC,0.06
+South Dakota,SD,0.042
+Tennessee,TN,0.07
+Texas,TX,0.0625
+Utah,UT,0.061
+Vermont,VT,0.06
+Virginia,VA,0.053
+Washington,WA,0.065
+West Virginia,WV,0.06
+Wisconsin,WI,0.05
+Wyoming,WY,0.04
+District of Columbia,DC,0.06
