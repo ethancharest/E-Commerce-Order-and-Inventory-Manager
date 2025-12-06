@@ -1,21 +1,31 @@
 package ecommerce;
 
 import ecommerce.model.*;
+import ecommerce.service.OrderService;
 import ecommerce.ui.*;
 import java.io.IOException;
-import java.util.Scanner;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import javax.swing.SwingUtilities;
 
 public class EcommerceApp {
 
-    private static Scanner scanner = new Scanner(System.in);
     private static LoginFrame loginFrame;
 
     public static void main(String[] args) throws IOException {
-        /**
-         * Removed the admin console prompts and transferred them into
-         * AdminFrame()
-         */
+
+        OrderService orderService = new OrderService();
+        orderService.fillQueue();
+        ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+        scheduler.scheduleAtFixedRate(() -> {
+            try {
+                orderService.processNextOrder();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }, 1, 2, TimeUnit.MINUTES);
+
         // Create the login frame on the Swing event thread
         SwingUtilities.invokeLater(() -> {
             loginFrame = new LoginFrame((role, username) -> {
@@ -39,7 +49,6 @@ public class EcommerceApp {
                     e.printStackTrace();
                 }
             });
-            return; // GUI will handle further interactions
         } else if (role == Role.CUSTOMER) {
             SwingUtilities.invokeLater(() -> {
                 try {
@@ -48,11 +57,9 @@ public class EcommerceApp {
                     e.printStackTrace();
                 }
             });
-            return; // GUI will handle further interactions
         } else {
             System.out.println("No role found. Exiting application.");
         }
-        scanner.close();
     }
 }
 /**

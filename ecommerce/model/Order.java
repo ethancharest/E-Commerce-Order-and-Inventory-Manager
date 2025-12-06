@@ -36,7 +36,7 @@ public class Order {
         this.orderId = orderService.generateOrderId();
         this.customerId = customerId;
         this.items = items;
-        this.createdAt = calendar.get(Calendar.MONTH + 1) + "/"
+        this.createdAt = calendar.get(Calendar.MONTH) + 1 + "/"
                 + calendar.get(Calendar.DAY_OF_MONTH) + "/"
                 + calendar.get(Calendar.YEAR) + " "
                 + calendar.get(Calendar.HOUR_OF_DAY) + ":"
@@ -69,6 +69,14 @@ public class Order {
 
     public OrderStatus getStatus() {
         return status;
+    }
+
+    public void setOrderId(String orderId) {
+        this.orderId = orderId;
+    }
+
+    public void setStatus(OrderStatus status) {
+        this.status = status;
     }
 
 }

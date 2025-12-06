@@ -42,6 +42,10 @@ public class SimpleTaxCalc {
         fileReader.close();
     }
 
+    public boolean validateStateCode(String stateCode) {
+        return stateTaxRates.containsKey(stateCode);
+    }
+
     /**
      * Calculates the sales tax for a given address and amount
      *

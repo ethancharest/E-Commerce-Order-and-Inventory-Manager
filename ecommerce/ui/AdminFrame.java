@@ -1,10 +1,15 @@
 package ecommerce.ui;
 //this class should contain the GUI which is what an ADMIN would see when logged in
 
+import ecommerce.model.OrderStatus;
+import ecommerce.model.Role;
+import ecommerce.service.OrderService;
 import ecommerce.service.ProductService;
+import ecommerce.service.ReportService;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
+import java.util.ArrayList;
 import javax.swing.*;
 
 public class AdminFrame extends JFrame implements ActionListener {
@@ -17,14 +22,22 @@ public class AdminFrame extends JFrame implements ActionListener {
     private JButton viewProductsBtn;       // Button
     private JComboBox<String> viewFiltersBtn;       // Dropdown for filters
     private JButton viewOrdersBtn;         // Button
+    private JComboBox<String> updateOrderStatusBtn; // Dropdown for order status updates
     private JButton logoutBtn;             // Button
+    private JButton viewReportsBtn;       // Button
     private JTextArea displayArea;         // Area to display information
     private JScrollPane scrollPane;        // Scroll pane for display area
     private int filterOption;          // Current filter option
+    private OrderService orderService;
+    private ReportService reportService;
 
     public AdminFrame() throws IOException {
         // Initialize the ProductService
         productService = new ProductService();
+
+        orderService = new OrderService();
+
+        reportService = new ReportService();
 
         // No filter by default
         filterOption = 0;
@@ -80,7 +93,7 @@ public class AdminFrame extends JFrame implements ActionListener {
      *
      * @return the button panel
      */
-    private JPanel createButtonPanel() {
+    private JPanel createButtonPanel() throws IOException {
         // 2 rows, 3 columns grid: keep buttons organized
         JPanel panel = new JPanel(new GridLayout(2, 3, 10, 10));
         panel.setBorder(BorderFactory.createTitledBorder("Product Management"));
@@ -106,6 +119,29 @@ public class AdminFrame extends JFrame implements ActionListener {
         deleteProductBtn.setFont(new Font("Arial", Font.BOLD, 12));
         panel.add(deleteProductBtn);
 
+        // View Reports Button 
+        viewReportsBtn = new JButton("View Reports");
+        viewReportsBtn.addActionListener(this);
+        viewReportsBtn.setFont(new Font("Arial", Font.BOLD, 12));
+        panel.add(viewReportsBtn);
+
+        // View Orders Button
+        viewOrdersBtn = new JButton("View All Orders");
+        viewOrdersBtn.addActionListener(this);
+        viewOrdersBtn.setFont(new Font("Arial", Font.BOLD, 12));
+        panel.add(viewOrdersBtn);
+
+        // Update Order Status Button
+        ArrayList<String> orderIds = new ArrayList<>();
+        orderIds.add("Update Order Status");
+        ArrayList<String> fetchedOrderIds = orderService.getAllOrderIds();
+        orderIds.addAll(fetchedOrderIds);
+        updateOrderStatusBtn = new JComboBox<>(orderIds.toArray(new String[0]));
+        updateOrderStatusBtn.addActionListener(this);
+        updateOrderStatusBtn.setFont(new Font("Arial", Font.BOLD, 12));
+        panel.add(updateOrderStatusBtn);
+        updateOrderStatusBtn.setVisible(false); // Hide order status dropdown until on view orders page
+
         // View Products Button
         viewProductsBtn = new JButton("View Products");
         viewProductsBtn.addActionListener(this);
@@ -118,12 +154,6 @@ public class AdminFrame extends JFrame implements ActionListener {
         viewFiltersBtn.setFont(new Font("Arial", Font.BOLD, 12));
         panel.add(viewFiltersBtn);
         viewFiltersBtn.setVisible(false); // Hide filter dropdown until on view products page
-
-        // View Orders Button
-        viewOrdersBtn = new JButton("View All Orders");
-        viewOrdersBtn.addActionListener(this);
-        viewOrdersBtn.setFont(new Font("Arial", Font.BOLD, 12));
-        panel.add(viewOrdersBtn);
 
         return panel;
     }
@@ -154,6 +184,10 @@ public class AdminFrame extends JFrame implements ActionListener {
             // Hide filter dropdown when not viewing products
             viewFiltersBtn.setVisible(false);
         }
+        if (updateOrderStatusBtn.isVisible() && e.getSource() != updateOrderStatusBtn) {
+            // Reset order status dropdown when not updating order status
+            updateOrderStatusBtn.setVisible(false);
+        }
         try {
             if (e.getSource() == addProductBtn) {
                 handleAddProduct();
@@ -167,6 +201,10 @@ public class AdminFrame extends JFrame implements ActionListener {
                 handleViewFilters();
             } else if (e.getSource() == viewOrdersBtn) {
                 handleViewOrders();
+            } else if (e.getSource() == updateOrderStatusBtn) {
+                handleUpdateOrderStatus();
+            } else if (e.getSource() == viewReportsBtn) {
+                handleViewReports();
             } else if (e.getSource() == logoutBtn) {
                 handleLogout();
             }
@@ -430,12 +468,52 @@ public class AdminFrame extends JFrame implements ActionListener {
     /**
      * Placehoder for VIEW ALL ORDERS feature, this will be changed later
      */
-    private void handleViewOrders() {
+    private void handleViewOrders() throws IOException {
+        updateOrderStatusBtn.setVisible(true); // Show order status dropdown when viewing orders
         displayArea.setText("========================================\n");
         displayArea.append("VIEW ALL ORDERS\n");
         displayArea.append("========================================\n\n");
-        displayArea.append("View all orders feature is under development.\n");
-        displayArea.append("This feature will display all customer orders in the system.\n");
+        String orders = orderService.getAllOrders();
+        displayArea.append(orders != null ? orders : "No orders available.");
+    }
+
+    private void handleUpdateOrderStatus() {
+        String selectedOrderId = (String) updateOrderStatusBtn.getSelectedItem();
+        if (selectedOrderId != null && !selectedOrderId.equals("Update Order Status")) {
+            String[] statusOptions = {"PROCESSED", "SHIPPED", "DELIVERED"};
+            OrderStatus newStatus = OrderStatus.valueOf((String) JOptionPane.showInputDialog(this,
+                    "Select new status for Order ID " + selectedOrderId + ":",
+                    "Update Order Status",
+                    JOptionPane.QUESTION_MESSAGE,
+                    null,
+                    statusOptions,
+                    statusOptions[0]));
+
+            if (newStatus != null) {
+                try {
+                    orderService.updateOrderStatus(selectedOrderId, newStatus);
+                    displayArea.setText("✓ Order status updated successfully: ID " + selectedOrderId + " to " + newStatus + "\n");
+                    showSuccess("Order status updated successfully!");
+                } catch (IOException ex) {
+                    showError("Error updating order status: " + ex.getMessage());
+                }
+            }
+        }
+    }
+
+    private void handleViewReports() {
+        // Placeholder for future report viewing functionality
+        displayArea.setText("========================================\n");
+        displayArea.append("VIEW REPORTS\n");
+        displayArea.append("========================================\n\n");
+        displayArea.append("1. Out-of-Stock Report\n");
+        displayArea.append(reportService.reportOutOfStock() + "\n");
+        displayArea.append("2. Total Orders Report\n");
+        displayArea.append(reportService.reportTotalOrders() + "\n");
+        displayArea.append("3. Most Frequently Ordered Products Report\n");
+        displayArea.append(reportService.reportMostFrequentlyOrderedProducts() + "\n");
+        displayArea.append("4. Total Revenue Report\n");
+        displayArea.append(reportService.reportTotalRevenue() + "\n");
     }
 
     private void handleLogout() {
@@ -448,7 +526,13 @@ public class AdminFrame extends JFrame implements ActionListener {
             try {
                 new LoginFrame((role, username) -> {
                     try {
-                        new AdminFrame(); // or appropriate frame based on role, can be changed later
+                        if (role == Role.ADMIN) {
+                            new AdminFrame();
+                        } else if (role == Role.CUSTOMER) {
+                            new UserFrame(username);
+                        } else {
+                            System.out.println("No role found. Exiting application.");
+                        }
                     } catch (IOException e) {
                         e.printStackTrace();
                     }

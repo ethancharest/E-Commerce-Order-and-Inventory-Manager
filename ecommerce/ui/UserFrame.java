@@ -5,6 +5,7 @@ package ecommerce.ui;
 import ecommerce.model.Address;
 import ecommerce.model.Cart;
 import ecommerce.model.Order;
+import ecommerce.model.Role;
 import ecommerce.service.OrderService;
 import ecommerce.service.ProductService;
 import ecommerce.service.SimpleTaxCalc;
@@ -137,6 +138,18 @@ public class UserFrame extends JFrame implements ActionListener {
         deleteProductBtn.setFont(new Font("Arial", Font.BOLD, 12));
         panel.add(deleteProductBtn);
 
+        // View Cart Button
+        viewCartBtn = new JButton("View Cart");
+        viewCartBtn.addActionListener(this);
+        viewCartBtn.setFont(new Font("Arial", Font.BOLD, 12));
+        panel.add(viewCartBtn);
+
+        // View Orders Button
+        viewOrdersBtn = new JButton("View Past Orders");
+        viewOrdersBtn.addActionListener(this);
+        viewOrdersBtn.setFont(new Font("Arial", Font.BOLD, 12));
+        panel.add(viewOrdersBtn);
+
         // View Products Button
         viewProductsBtn = new JButton("View Products");
         viewProductsBtn.addActionListener(this);
@@ -149,24 +162,6 @@ public class UserFrame extends JFrame implements ActionListener {
         viewFiltersBtn.setFont(new Font("Arial", Font.BOLD, 12));
         panel.add(viewFiltersBtn);
         viewFiltersBtn.setVisible(false); // Hide filter dropdown until on view products page
-
-        // View Orders Button
-        viewOrdersBtn = new JButton("View Past Orders");
-        viewOrdersBtn.addActionListener(this);
-        viewOrdersBtn.setFont(new Font("Arial", Font.BOLD, 12));
-        panel.add(viewOrdersBtn);
-
-        // View Cart Button
-        viewCartBtn = new JButton("View Cart");
-        viewCartBtn.addActionListener(this);
-        viewCartBtn.setFont(new Font("Arial", Font.BOLD, 12));
-        panel.add(viewCartBtn);
-
-        // // Checkout Button 
-        // checkoutBtn = new JButton("Checkout");
-        // checkoutBtn.addActionListener(this);
-        // checkoutBtn.setFont(new Font("Arial", Font.BOLD, 12));
-        // panel.add(checkoutBtn);
 
         return panel;
     }
@@ -446,14 +441,14 @@ public class UserFrame extends JFrame implements ActionListener {
     }
 
     /**
-     * Placehoder for VIEW ALL ORDERS feature, this will be changed later
+     * Placehoder for VIEW PAST ORDERS feature, this will be changed later
      */
-    private void handleViewOrders() {
+    private void handleViewOrders() throws IOException {
         displayArea.setText("========================================\n");
-        displayArea.append("VIEW ALL ORDERS\n");
+        displayArea.append("VIEW PAST ORDERS\n");
         displayArea.append("========================================\n\n");
-        displayArea.append("View all orders feature is under development.\n");
-        displayArea.append("This feature will display all customer orders in the system.\n");
+        String orders = orderService.getOrdersByUsername(usernameStr);
+        displayArea.append(orders.isEmpty() ? "You have no past orders.\n" : orders);
     }
 
     /**
@@ -474,7 +469,7 @@ public class UserFrame extends JFrame implements ActionListener {
         int beginCheckout = JOptionPane.showConfirmDialog(this,
                 "Are you ready to checkout?", "Confirm Checkout",
                 JOptionPane.YES_NO_OPTION);
-        if (beginCheckout == JOptionPane.YES_OPTION && address == null) {
+        if (beginCheckout == JOptionPane.YES_OPTION && address == null && cart.subtotal() > 0) {
             JDialog dialog = new JDialog(this, "Address", true);
             dialog.setSize(400, 350);
             dialog.setLocationRelativeTo(this);
@@ -518,6 +513,14 @@ public class UserFrame extends JFrame implements ActionListener {
                         showError("Please fill in all fields.");
                         return;
                     }
+                    if (!zipCode.matches("\\d{5}")) {
+                        showError("Please enter a valid 5-digit zip code.");
+                        return;
+                    }
+                    if (!taxCalculator.validateStateCode(state)) {
+                        showError("Please enter a valid U.S. state.");
+                        return;
+                    }
                     address = new Address(street, city, state, zipCode);
                     displayArea.setText("✓ Address updated successfully: " + address.toString() + "\n");
                     dialog.dispose();
@@ -534,6 +537,9 @@ public class UserFrame extends JFrame implements ActionListener {
 
             dialog.add(panel);
             dialog.setVisible(true);
+        } else if (cart.subtotal() == 0) {
+            showError("Your cart is empty. Please add products before checking out.");
+            return;
         }
         double tax = taxCalculator.calculateTax(address, cart.subtotal());
         double totalPrice = tax + cart.subtotal();
@@ -567,7 +573,13 @@ public class UserFrame extends JFrame implements ActionListener {
             try {
                 new LoginFrame((role, username) -> {
                     try {
-                        new UserFrame(username); // or appropriate frame based on role, can be changed later
+                        if (role == Role.ADMIN) {
+                            new AdminFrame();
+                        } else if (role == Role.CUSTOMER) {
+                            new UserFrame(username);
+                        } else {
+                            System.out.println("No role found. Exiting application.");
+                        }
                     } catch (IOException e) {
                         e.printStackTrace();
                     }

@@ -5,7 +5,6 @@ public class Address {
     /*
      * This class stores the necessary information for a U.S. based shipping address
      */
-
     private String street;
     private String city;
     private String state;
