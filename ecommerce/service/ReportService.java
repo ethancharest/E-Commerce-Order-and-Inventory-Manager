@@ -5,10 +5,10 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- * ReportService generates business insights and analytics from order and product data
- * It reads from CSV files (orders, products, and orderProduct) and produces
- * formatted reports for admin review.
- * reports are designed to help track inventory & revenue
+ * ReportService generates business insights and analytics from order and
+ * product data It reads from CSV files (orders, products, and orderProduct) and
+ * produces formatted reports for admin review. reports are designed to help
+ * track inventory & revenue
  */
 public class ReportService {
 
@@ -20,8 +20,9 @@ public class ReportService {
     /**
      * Generates an out-of-stock report listing all products with stock <= 0
      * This helps admins identify which products need to be reordered
-     * 
-     * @return formatted report showing product IDs and names that are out of stock
+     *
+     * @return formatted report showing product IDs and names that are out of
+     * stock
      */
     public String reportOutOfStock() {
         try {
@@ -36,17 +37,20 @@ public class ReportService {
 
             // Parse products.csv and extract ID, name, and stock for each product
             Scanner scanby = new Scanner(f);
-            if (scanby.hasNextLine())
+            if (scanby.hasNextLine()) {
                 scanby.nextLine(); // skip CSV header row
+            }
             while (scanby.hasNextLine()) {
                 String line = scanby.nextLine().trim();
-                if (line.isEmpty())
+                if (line.isEmpty()) {
                     continue;
+                }
                 String[] parts = line.split(",");
 
                 // CSV format: id, name, category, price, stock
-                if (parts.length < 5)
+                if (parts.length < 5) {
                     continue;
+                }
                 String id = parts[0].trim();
                 String name = parts[1].trim();
                 String stockStr = parts[4].trim();
@@ -85,7 +89,7 @@ public class ReportService {
 
     /**
      * Generates a report showing the total number of orders placed
-     * 
+     *
      * @return formatted report displaying total order count
      */
     public String reportTotalOrders() {
@@ -96,19 +100,22 @@ public class ReportService {
             }
             Scanner scanby = new Scanner(f);
             int totalOrders = 0;
-            if (scanby.hasNextLine())
+            if (scanby.hasNextLine()) {
                 scanby.nextLine(); // skip CSV header row
-
+            }
             // Parse each order line and increment counter
             while (scanby.hasNextLine()) {
                 String line = scanby.nextLine().trim();
-                if (line.isEmpty())
+                if (line.isEmpty()) {
                     continue;
+                }
                 String[] parts = line.split(",");
 
                 // CSV format: order id, customer id, total price, timestamp, status
-                if (parts.length < 3)
+                if (parts.length < 3) {
                     continue; // skip malformed lines
+
+                }
                 totalOrders++;
             }
             scanby.close();
@@ -122,8 +129,9 @@ public class ReportService {
     }
 
     /**
-     * Generates a report of the most frequently ordered products ranked by total units sold.
-     * 
+     * Generates a report of the most frequently ordered products ranked by
+     * total units sold.
+     *
      * @return formatted report with top 10 products by quantity ordered
      */
     public String reportMostFrequentlyOrderedProducts() {
@@ -139,15 +147,18 @@ public class ReportService {
             File pf = new File(PRODUCTS_CSV);
             if (pf.exists()) {
                 Scanner scanman = new Scanner(pf);
-                if (scanman.hasNextLine())
+                if (scanman.hasNextLine()) {
                     scanman.nextLine();
+                }
                 while (scanman.hasNextLine()) {
                     String line = scanman.nextLine().trim();
-                    if (line.isEmpty())
+                    if (line.isEmpty()) {
                         continue;
+                    }
                     String[] parts = line.split(",");
-                    if (parts.length < 2)
+                    if (parts.length < 2) {
                         continue;
+                    }
                     idToName.put(parts[0].trim(), parts[1].trim());
                 }
                 scanman.close();
@@ -155,20 +166,23 @@ public class ReportService {
 
             // Second pass: aggregate product quantities from order-products file across all orders
             Scanner scanby = new Scanner(f);
-            if (scanby.hasNextLine())
+            if (scanby.hasNextLine()) {
                 scanby.nextLine(); // skip CSV header row
+
+            }
             Map<String, Integer> productCounts = new HashMap<>(); // product ID -> total units ordered
             while (scanby.hasNextLine()) {
                 String line = scanby.nextLine().trim();
-                if (line.isEmpty())
+                if (line.isEmpty()) {
                     continue;
+                }
 
                 // CSV format: order id, product id1, quantity1, product id2, quantity2
                 // Each order can contain multiple products with their respective quantities
                 String[] parts = line.split(",");
-                if (parts.length < 3)
+                if (parts.length < 3) {
                     continue; // skip lines without at least one product
-
+                }
                 // Parse pairs of (product id, quantity) starting from index 1
                 for (int i = 1; i + 1 < parts.length; i += 2) {
                     String pid = parts[i].trim();
@@ -203,8 +217,10 @@ public class ReportService {
                 String name = idToName.getOrDefault(e.getKey(), "Product ID " + e.getKey());
                 out.append(rank).append(". ").append(name).append(" - ").append(e.getValue()).append(" units\n");
                 rank++;
-                if (rank > 10)
+                if (rank > 10) {
                     break; // limit to top 10 
+
+                }
             }
             return out.toString();
         } catch (IOException ex) {
@@ -214,9 +230,11 @@ public class ReportService {
     }
 
     /**
-     * Generates a revenue report showing total monetary value across all completed orders
-     * 
-     * @return formatted report displaying total revenue with currency formatting
+     * Generates a revenue report showing total monetary value across all
+     * completed orders
+     *
+     * @return formatted report displaying total revenue with currency
+     * formatting
      */
     public String reportTotalRevenue() {
         try {
@@ -225,20 +243,25 @@ public class ReportService {
                 return header("Total Revenue Report") + "Orders file not found: " + ORDERS_CSV + "\n";
             }
             Scanner scanman = new Scanner(f);
-            if (scanman.hasNextLine())
+            if (scanman.hasNextLine()) {
                 scanman.nextLine(); // skip CSV header row
+
+            }
             double totalRevenue = 0.0; // accumulated revenue across all orders
 
             // Parse each order and sum the total price values
             while (scanman.hasNextLine()) {
                 String line = scanman.nextLine().trim();
-                if (line.isEmpty())
+                if (line.isEmpty()) {
                     continue;
+                }
                 String[] parts = line.split(",");
 
                 // CSV format: order id, customer id, total price, timestamp, status
-                if (parts.length < 3)
+                if (parts.length < 3) {
                     continue; // skip malformed lines
+
+                }
                 try {
                     // The total price is in the 3rd column (index 2)
                     totalRevenue += Double.parseDouble(parts[2].trim());
@@ -260,11 +283,11 @@ public class ReportService {
     /**
      * Helper method to generate a visually formatted header for reports.
      * Creates the title with an underline of equal signs for readability
-     * 
+     *
      * @param title the report title to format
      * @return formatted header string with title and matching-length underline
      */
     private String header(String title) {
-        return title + "\n" + title.replaceAll(".", "=") + "\n\n";
+        return title.replaceAll(".", "=") + "\n" + title + "\n" + title.replaceAll(".", "=") + "\n\n";
     }
 }

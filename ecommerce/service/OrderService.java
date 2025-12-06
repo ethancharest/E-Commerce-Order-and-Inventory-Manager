@@ -24,6 +24,7 @@ public class OrderService {
     public String getOrdersByUsername(String username) throws IOException {
         Scanner orderScanner = new Scanner(new File("ecommerce/data/orders.csv"));
         Scanner orderProductScanner = null;
+        ProductService productService = new ProductService();
         StringBuilder ordersDisplay = new StringBuilder();
         orderScanner.nextLine(); // skip header
         while (orderScanner.hasNextLine()) {
@@ -44,7 +45,8 @@ public class OrderService {
                     String[] itemParts = itemLine.split(",");
                     if (itemParts[0].equals(orderId)) {
                         for (int i = 1; i < itemParts.length; i += 2) {
-                            ordersDisplay.append(" - Product ID: ").append(itemParts[i])
+                            ordersDisplay.append(" - Product Name: ").append(productService
+                                    .getProductByID(Integer.parseInt(itemParts[i])).getName())
                                     .append(", Quantity: ").append(itemParts[i + 1]).append("\n");
                         }
                     }
@@ -112,7 +114,7 @@ public class OrderService {
         FileWriter orderProductsWriter = new FileWriter("ecommerce/data/orderProducts.csv", true);
         orderWriter.append("\n").append(order.getOrderId()).append(",")
                 .append(order.getCustomerId()).append(",")
-                .append(String.valueOf(order.getTotal())).append(",")
+                .append(String.format("%.2f", order.getTotal())).append(",")
                 .append(order.getCreatedAt()).append(",")
                 .append(order.getStatus().toString());
         orderWriter.flush();

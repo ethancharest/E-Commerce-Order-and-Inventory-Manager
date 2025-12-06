@@ -105,6 +105,15 @@ public class Cart {
         }
     }
 
+    public boolean validateProduct(String name) throws IOException {
+        for (CartItem item : items.values()) {
+            if (item.getProduct().getName().equalsIgnoreCase(name)) {
+                return true;
+            }
+        }
+        return false; // Product not found
+    }
+
     public ArrayList<CartItem> getItems() {
         return new ArrayList<>(items.values());
     }

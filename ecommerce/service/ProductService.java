@@ -123,6 +123,15 @@ public class ProductService {
         return null; // Product not found
     }
 
+    public Product getProductByID(int id) throws IOException {
+        for (Product product : products) {
+            if (Integer.parseInt(product.getId()) == id) {
+                return product;
+            }
+        }
+        return null; // Product not found
+    }
+
     /**
      * Search products by name (case-insensitive, partial match) and return a
      * formatted string for display. If no products match, returns a message
@@ -279,6 +288,25 @@ public class ProductService {
             System.out.println("Failed to delete product: ID " + productId);
         }
         getAllProducts(); // Refresh the in-memory products list
+    }
+
+    public boolean validateProductByName(String name) throws IOException {
+        for (Product product : products) {
+            if (product.getName().equalsIgnoreCase(name)) {
+                return true;
+            }
+        }
+        return false; // Product not found
+    }
+
+    public boolean validateProductByID(String idStr) throws IOException {
+        int id = Integer.parseInt(idStr);
+        for (Product product : products) {
+            if (Integer.parseInt(product.getId()) == id) {
+                return true;
+            }
+        }
+        return false; // Product not found
     }
 
     /**

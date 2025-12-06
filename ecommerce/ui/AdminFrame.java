@@ -102,30 +102,6 @@ public class AdminFrame extends JFrame implements ActionListener {
         // Ensure the button panel reserves enough height so buttons dont get squished 
         panel.setPreferredSize(new Dimension(0, 120));
 
-        // Add Product Button
-        addProductBtn = new JButton("Add Product");
-        addProductBtn.addActionListener(this);
-        addProductBtn.setFont(new Font("Arial", Font.BOLD, 12));
-        panel.add(addProductBtn);
-
-        // Update Product Button
-        updateProductBtn = new JButton("Update Product");
-        updateProductBtn.addActionListener(this);
-        updateProductBtn.setFont(new Font("Arial", Font.BOLD, 12));
-        panel.add(updateProductBtn);
-
-        // Delete Product Button
-        deleteProductBtn = new JButton("Delete Product");
-        deleteProductBtn.addActionListener(this);
-        deleteProductBtn.setFont(new Font("Arial", Font.BOLD, 12));
-        panel.add(deleteProductBtn);
-
-        // View Reports Button 
-        viewReportsBtn = new JButton("View Reports");
-        viewReportsBtn.addActionListener(this);
-        viewReportsBtn.setFont(new Font("Arial", Font.BOLD, 12));
-        panel.add(viewReportsBtn);
-
         // View Orders Button
         viewOrdersBtn = new JButton("View All Orders");
         viewOrdersBtn.addActionListener(this);
@@ -156,11 +132,35 @@ public class AdminFrame extends JFrame implements ActionListener {
         panel.add(viewFiltersBtn);
         viewFiltersBtn.setVisible(false); // Hide filter dropdown until on view products page
 
-        // Search Button (placed last)
+        // Search Button 
         searchBtn = new JButton("Search");
         searchBtn.addActionListener(this);
         searchBtn.setFont(new Font("Arial", Font.BOLD, 12));
         panel.add(searchBtn);
+
+        // Add Product Button
+        addProductBtn = new JButton("Add Product");
+        addProductBtn.addActionListener(this);
+        addProductBtn.setFont(new Font("Arial", Font.BOLD, 12));
+        panel.add(addProductBtn);
+
+        // Update Product Button
+        updateProductBtn = new JButton("Update Product");
+        updateProductBtn.addActionListener(this);
+        updateProductBtn.setFont(new Font("Arial", Font.BOLD, 12));
+        panel.add(updateProductBtn);
+
+        // Delete Product Button
+        deleteProductBtn = new JButton("Delete Product");
+        deleteProductBtn.addActionListener(this);
+        deleteProductBtn.setFont(new Font("Arial", Font.BOLD, 12));
+        panel.add(deleteProductBtn);
+
+        // View Reports Button 
+        viewReportsBtn = new JButton("View Reports");
+        viewReportsBtn.addActionListener(this);
+        viewReportsBtn.setFont(new Font("Arial", Font.BOLD, 12));
+        panel.add(viewReportsBtn);
 
         return panel;
     }
@@ -366,6 +366,11 @@ public class AdminFrame extends JFrame implements ActionListener {
                     return;
                 }
 
+                if (!productService.validateProductByID(idStr)) {
+                    showError("Product ID not found.");
+                    return;
+                }
+
                 int id = Integer.parseInt(idStr);
                 double price = Double.parseDouble(priceStr);
                 int stock = Integer.parseInt(stockStr);
@@ -406,7 +411,7 @@ public class AdminFrame extends JFrame implements ActionListener {
                 JOptionPane.QUESTION_MESSAGE);
 
         // Only happens if the admin didnt cancel and typed something 
-        if (idStr != null && !idStr.trim().isEmpty()) {
+        if (idStr != null && !idStr.trim().isEmpty() && productService.validateProductByID(idStr)) {
             try {
                 int id = Integer.parseInt(idStr);
                 int confirm = JOptionPane.showConfirmDialog(this,
@@ -420,6 +425,8 @@ public class AdminFrame extends JFrame implements ActionListener {
             } catch (NumberFormatException ex) {
                 showError("Please enter a valid product ID.");
             }
+        } else if (idStr != null) {
+            showError("Product ID not found.");
         }
     }
 
@@ -515,13 +522,9 @@ public class AdminFrame extends JFrame implements ActionListener {
         displayArea.setText("========================================\n");
         displayArea.append("VIEW REPORTS\n");
         displayArea.append("========================================\n\n");
-        displayArea.append("1. Out-of-Stock Report\n");
         displayArea.append(reportService.reportOutOfStock() + "\n");
-        displayArea.append("2. Total Orders Report\n");
         displayArea.append(reportService.reportTotalOrders() + "\n");
-        displayArea.append("3. Most Frequently Ordered Products Report\n");
         displayArea.append(reportService.reportMostFrequentlyOrderedProducts() + "\n");
-        displayArea.append("4. Total Revenue Report\n");
         displayArea.append(reportService.reportTotalRevenue() + "\n");
     }
 
@@ -530,7 +533,10 @@ public class AdminFrame extends JFrame implements ActionListener {
      */
     private void handleSearchProducts() {
         String query = JOptionPane.showInputDialog(this, "Enter product name to search:", "Search Products", JOptionPane.QUESTION_MESSAGE);
-        if (query == null) return; // canceled
+        if (query == null) {
+            return; // canceled
+
+        }
         try {
             String results = productService.searchProductsByName(query, true);
             displayArea.setText("========================================\n");

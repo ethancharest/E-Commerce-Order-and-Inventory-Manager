@@ -270,6 +270,11 @@ public class UserFrame extends JFrame implements ActionListener {
                     return;
                 }
 
+                if (productService.validateProductByName(name) == false) {
+                    showError("Product does not exist.");
+                    return;
+                }
+
                 int quantity = Integer.parseInt(quantityStr);
 
                 //Additional Validation: price and quantity must be non-negative
@@ -342,6 +347,11 @@ public class UserFrame extends JFrame implements ActionListener {
                     return;
                 }
 
+                if (cart.validateProduct(name) == false) {
+                    showError("Product does not exist in cart.");
+                    return;
+                }
+
                 int quantity = Integer.parseInt(quantityStr);
 
                 if (quantity <= 0) {
@@ -383,7 +393,7 @@ public class UserFrame extends JFrame implements ActionListener {
                 JOptionPane.QUESTION_MESSAGE);
 
         // Only happens if the admin didnt cancel and typed something 
-        if (nameStr != null && !nameStr.trim().isEmpty()) {
+        if (nameStr != null && !nameStr.trim().isEmpty() && cart.validateProduct(nameStr)) {
             try {
                 int confirm = JOptionPane.showConfirmDialog(this,
                         "Are you sure you want to delete product " + nameStr + " from cart?", "Confirm Delete",
@@ -396,6 +406,8 @@ public class UserFrame extends JFrame implements ActionListener {
             } catch (NumberFormatException ex) {
                 showError("Please enter a valid product name.");
             }
+        } else if (nameStr != null) {
+            showError("Product not found in cart.");
         }
     }
 
@@ -465,7 +477,10 @@ public class UserFrame extends JFrame implements ActionListener {
      */
     private void handleSearchProducts() {
         String query = JOptionPane.showInputDialog(this, "Enter product name to search:", "Search Products", JOptionPane.QUESTION_MESSAGE);
-        if (query == null) return; // canceled
+        if (query == null) {
+            return; // canceled
+
+        }
         try {
             String results = productService.searchProductsByName(query, false);
             displayArea.setText("========================================\n");
