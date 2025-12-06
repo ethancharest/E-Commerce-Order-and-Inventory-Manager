@@ -124,6 +124,45 @@ public class ProductService {
     }
 
     /**
+     * Search products by name (case-insensitive, partial match) and return a
+     * formatted string for display. If no products match, returns a message
+     *
+     * @param query search string
+     * @param isAdmin whether to include admin-only fields (ID, stock)
+     * @return formatted product list or "No products found."
+     * @throws IOException
+     */
+    public String searchProductsByName(String query, boolean isAdmin) throws IOException {
+        if (query == null || query.trim().isEmpty()) {
+            return "Please enter a search term.";
+        }
+        String q = query.trim().toLowerCase();
+        StringBuilder results = new StringBuilder();
+        for (Product product : products) {
+            if (product.getName().toLowerCase().contains(q)) {
+                results.append("Name: ").append(product.getName())
+                        .append(" | Category: ").append(product.getCategory())
+                        .append(" | Price: $").append(String.format("%.2f", product.getPrice()));
+                if (isAdmin) {
+                    results.append(" | ID: ").append(product.getId())
+                            .append(" | Stock: ").append(product.getAvailableStock());
+                } else if (product.getAvailableStock() > 10) {
+                    results.append(" | In Stock");
+                } else if (product.getAvailableStock() > 0) {
+                    results.append(" | Low Stock");
+                } else {
+                    results.append(" | Out of Stock");
+                }
+                results.append("\n");
+            }
+        }
+        if (results.length() == 0) {
+            return "No products found for '" + query + "'.";
+        }
+        return results.toString();
+    }
+
+    /**
      * Appends a new product to the CSV file ID is auto-generated, everything
      * else comes from the caller
      *

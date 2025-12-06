@@ -6,3 +6,5 @@ id, name, category, price, stock
 105,Smartphone,Electronics,699.99,40
 106,Horse,Animal,999.99,2
 107,computer,electronics,10000.0,99
+108,Empty Box,Misc,9.99,0
+109,Horse Saddle,Sports,499.99,5

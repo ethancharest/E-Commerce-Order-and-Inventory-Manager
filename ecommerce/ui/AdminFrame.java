@@ -25,6 +25,7 @@ public class AdminFrame extends JFrame implements ActionListener {
     private JComboBox<String> updateOrderStatusBtn; // Dropdown for order status updates
     private JButton logoutBtn;             // Button
     private JButton viewReportsBtn;       // Button
+    private JButton searchBtn;             // Button for searching products
     private JTextArea displayArea;         // Area to display information
     private JScrollPane scrollPane;        // Scroll pane for display area
     private int filterOption;          // Current filter option
@@ -148,12 +149,18 @@ public class AdminFrame extends JFrame implements ActionListener {
         viewProductsBtn.setFont(new Font("Arial", Font.BOLD, 12));
         panel.add(viewProductsBtn);
 
-        // View Filters Button
+        // View Filters Button (placed next to View Products)
         viewFiltersBtn = new JComboBox<>(new String[]{"No Filter", "By Name", "By Category", "Price: Low to High", "Price: High to Low", "Stock: Low to High", "Stock: High to Low"});
         viewFiltersBtn.addActionListener(this);
         viewFiltersBtn.setFont(new Font("Arial", Font.BOLD, 12));
         panel.add(viewFiltersBtn);
         viewFiltersBtn.setVisible(false); // Hide filter dropdown until on view products page
+
+        // Search Button (placed last)
+        searchBtn = new JButton("Search");
+        searchBtn.addActionListener(this);
+        searchBtn.setFont(new Font("Arial", Font.BOLD, 12));
+        panel.add(searchBtn);
 
         return panel;
     }
@@ -197,6 +204,8 @@ public class AdminFrame extends JFrame implements ActionListener {
                 handleDeleteProduct();
             } else if (e.getSource() == viewProductsBtn) {
                 handleViewProducts();
+            } else if (e.getSource() == searchBtn) {
+                handleSearchProducts();
             } else if (e.getSource() == viewFiltersBtn) {
                 handleViewFilters();
             } else if (e.getSource() == viewOrdersBtn) {
@@ -514,6 +523,23 @@ public class AdminFrame extends JFrame implements ActionListener {
         displayArea.append(reportService.reportMostFrequentlyOrderedProducts() + "\n");
         displayArea.append("4. Total Revenue Report\n");
         displayArea.append(reportService.reportTotalRevenue() + "\n");
+    }
+
+    /**
+     * Prompts admin for a search term and shows matching products
+     */
+    private void handleSearchProducts() {
+        String query = JOptionPane.showInputDialog(this, "Enter product name to search:", "Search Products", JOptionPane.QUESTION_MESSAGE);
+        if (query == null) return; // canceled
+        try {
+            String results = productService.searchProductsByName(query, true);
+            displayArea.setText("========================================\n");
+            displayArea.append("SEARCH RESULTS for '" + query + "'\n");
+            displayArea.append("========================================\n\n");
+            displayArea.append(results);
+        } catch (IOException ex) {
+            showError("Error searching products: " + ex.getMessage());
+        }
     }
 
     private void handleLogout() {
