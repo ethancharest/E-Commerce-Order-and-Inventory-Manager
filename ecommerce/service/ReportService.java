@@ -183,6 +183,7 @@ public class ReportService {
                 if (parts.length < 3) {
                     continue; // skip lines without at least one product
                 }
+                
                 // Parse pairs of (product id, quantity) starting from index 1
                 for (int i = 1; i + 1 < parts.length; i += 2) {
                     String pid = parts[i].trim();
@@ -192,6 +193,7 @@ public class ReportService {
                         qty = Integer.parseInt(qtyStr);
                     } catch (NumberFormatException ignored) {
                     }
+
                     // Accumulate quantities for each product across all orders
                     productCounts.put(pid, productCounts.getOrDefault(pid, 0) + qty);
                 }
