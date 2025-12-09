@@ -1,11 +1,11 @@
 package ecommerce.service;
 
-/*
+/**
  * OrderService
- * Responsible for persisting orders to CSV files and managing a simple
- * in-memory queue used for staged processing (e.g., PROCESSED -> SHIPPED
- * -> DELIVERED). Comments are kept brief and focused on intent and
- * assumptions so future maintainers can quickly understand behavior.
+ * Handles persisting orders (CSV-backed) and an in-memory queue
+ * 
+ * queue used to advance order lifecycle states (PROCESSED -> SHIPPED -> DELIVERED).
+ * Comments are concise; methods assume small CSV files and simple parsing.
  */
 
 import ecommerce.model.Order;
@@ -18,25 +18,30 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Scanner;
 import java.util.StringJoiner;
-
 public class OrderService {
 
+    /**
+     * In-memory queue for staged processing of orders.
+     * Populated from `orders.csv` by {@link #fillQueue()} so processing
+     * can resume after a restart
+     */
     public static Queue<Order> orderQueue = new LinkedList<>();
-    // In-memory queue used for staged processing (ship/deliver transitions).
-    // Orders are enqueued when persisted and repopulated from `orders.csv`
-    // via `fillQueue()` so the app can resume processing across restarts.
 
     public String generateOrderId() {
-        // Create a simple unique order id using the current epoch millis.
-        // This is sufficient for a local demo; a production system would
-        // need a stronger, collision-resistant approach.
+        /**
+         * Generate a simple unique order id using system time millis
+         */
         return "ORD" + System.currentTimeMillis();
     }
 
+    /**
+     * Return a listing of orders for `username` by
+     * reading `orders.csv` and `orderProducts.csv`
+     * 
+     * Assumes CSV columns: orderId,customerId,total,createdAt,status
+     * This method is simple and not optimized for large files
+     */
     public String getOrdersByUsername(String username) throws IOException {
-        // Read `orders.csv` and `orderProducts.csv` to build a readable
-        // listing for a single user's orders. Assumes CSV columns:
-        // orderId,customerId,total,createdAt,status
         Scanner orderScanner = new Scanner(new File("ecommerce/data/orders.csv"));
         Scanner orderProductScanner = null;
         ProductService productService = new ProductService();
@@ -52,10 +57,9 @@ public class OrderService {
                 ordersDisplay.append("Total: $").append(orderParts[2]).append("\n");
                 ordersDisplay.append("Date: ").append(orderParts[3]).append("\n");
                 ordersDisplay.append("Items:\n");
-                // Find items for this order
-                // `orderProducts.csv` rows: orderId, productId1, qty1, productId2, qty2, ...
-                // We re-scan this file per order which is simple but not optimal
-                // for very large datasets.
+                
+                // Find items for this order (scan `orderProducts.csv`).
+                // Format: orderId, productId1, qty1, productId2, qty2, ...
                 orderProductScanner = new Scanner(new File("ecommerce/data/orderProducts.csv"));
                 orderProductScanner.nextLine(); // skip header
                 while (orderProductScanner.hasNextLine()) {
@@ -78,8 +82,10 @@ public class OrderService {
         return ordersDisplay.toString();
     }
 
+    /**
+     * Return all order IDs found in `orders.csv`.
+     */
     public ArrayList<String> getAllOrderIds() throws IOException {
-        // Return a list of all order IDs present in `orders.csv`.
         Scanner orderScanner = new Scanner(new File("ecommerce/data/orders.csv"));
         orderScanner.nextLine(); // skip header
         ArrayList<String> ids = new ArrayList<>();
@@ -92,11 +98,11 @@ public class OrderService {
         return ids;
     }
 
+    /**
+     * Produce a readable dump of all orders. Re-scans `orderProducts.csv`
+     * per order for simplicity — this is fine for small datasets
+     */
     public String getAllOrders() throws IOException {
-        // Produce a human-readable dump of every order. Useful for admin
-        // reporting. Note: this implementation is intentionally simple and
-        // re-reads `orderProducts.csv` for each order rather than building
-        // an index; acceptable for small CSVs but could be optimized.
         Scanner orderScanner = new Scanner(new File("ecommerce/data/orders.csv"));
         Scanner orderProductScanner = null;
         StringBuilder ordersDisplay = new StringBuilder();
@@ -132,9 +138,11 @@ public class OrderService {
     }
 
     public void processOrder(Order order) throws IOException {
-        // Persist the order row to `orders.csv` and its items to
-        // `orderProducts.csv`, then enqueue it for staged processing.
-        // Uses simple CSV append; no concurrency control is provided here.
+        /**
+         * Persist the order to disk (append to CSVs) and enqueue it for
+         * staged processing. Uses simple append semantics; there is no
+         * concurrency control in this demo code
+         */
         FileWriter orderWriter = new FileWriter("ecommerce/data/orders.csv", true);
         FileWriter orderProductsWriter = new FileWriter("ecommerce/data/orderProducts.csv", true);
         orderWriter.append("\n").append(order.getOrderId()).append(",")
@@ -161,8 +169,10 @@ public class OrderService {
         if (order == null) {
             return;
         }
-        // Advance the in-memory order lifecycle and persist each status
-        // change to disk so `fillQueue()` can rebuild state after a restart.
+        /**
+         * Advance the next queued order through its lifecycle and persist
+         * status changes so the queue can be reconstructed later
+         */
         switch (order.getStatus()) {
             case PROCESSED:
                 order.setStatus(OrderStatus.SHIPPED);
@@ -184,9 +194,10 @@ public class OrderService {
     }
 
     public void fillQueue() throws IOException {
-        // Restore non-DELIVERED orders into `orderQueue` by scanning
-        // `orders.csv`. This allows the application to resume processing
-        // where it left off between runs.
+        /**
+         * Load non-DELIVERED orders from `orders.csv` into the in-memory
+         * queue so processing can resume between runs
+         */
         Scanner orderScanner = new Scanner(new File("ecommerce/data/orders.csv"));
         orderScanner.nextLine(); // skip header
         while (orderScanner.hasNextLine()) {
@@ -205,9 +216,10 @@ public class OrderService {
     }
 
     public Order createOrderFromFile(String orderId) throws IOException {
-           // Construct a lightweight Order object using data from the CSV.
-           // The returned Order intentionally omits item details in favor of
-           // keeping the object small for status updates and queueing.
+           /**
+            * Build a  Order object from a CSV row.
+            * Items are omitted because callers often only need id/status/total for queueing and status updates
+            */
            Scanner orderScanner = new Scanner(new File("ecommerce/data/orders.csv"));
            orderScanner.nextLine(); // skip header
         while (orderScanner.hasNextLine()) {
@@ -239,9 +251,10 @@ public class OrderService {
     }
 
     public void updateOrderStatusInFile(Order order) throws IOException {
-        // Update the status field in `orders.csv` by writing changes to
-        // a temporary file and then replacing the original. This provides
-        // a simple atomic-like swap without requiring complex locking.
+        /**
+         * update an order's status in `orders.csv` by writing
+         * a temporary file and replacing the original
+         */
         File inputFile = new File("ecommerce/data/orders.csv");
         File tempFile = new File("ecommerce/data/orders_temp.csv");
 
@@ -255,6 +268,7 @@ public class OrderService {
             String line = scanner.nextLine();
             String[] parts = line.split(",");
             if (parts[0].equals(order.getOrderId())) {
+                
                 // Replace status field for the matching order row.
                 parts[4] = order.getStatus().toString();
                 String updatedLine = String.join(",", parts);
