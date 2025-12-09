@@ -281,9 +281,7 @@ public class OrderService {
         writer.close();
         scanner.close();
 
-        // Replace original file with updated file. If either operation
-        // fails we notify on stdout; this could be replaced with proper
-        // logging in a production app.
+        // Replace original file with updated file
         if (!inputFile.delete()) {
             System.out.println("Could not delete original orders file");
             return;
