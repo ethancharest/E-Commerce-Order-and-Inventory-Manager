@@ -8,7 +8,6 @@ import ecommerce.service.AuthService;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.FileNotFoundException;
-import java.util.function.Consumer;
 import javax.swing.*;
 
 public class LoginFrame extends JFrame implements ActionListener {
@@ -17,18 +16,11 @@ public class LoginFrame extends JFrame implements ActionListener {
     private JPasswordField passField;   // Hidden input field for password
     private JButton loginButton;        // Login button
     private Role role;                  // stores authenticated user role
-    private Consumer<Role> onLogin;     // callback that recieves the user role on successful login
-    private String usernameStr;
-    private Consumer<String> usernameCon; // callback that receives the username on successful login
     private LoginSuccessListener listener;
 
     public LoginFrame(LoginSuccessListener listener) {
         // Initialize default role as NOTFOUND until authentication is successful
         role = Role.NOTFOUND;
-        this.onLogin = onLogin;     // store the callback
-
-        usernameStr = "";
-        this.usernameCon = usernameCon; // store the username callback
 
         this.listener = listener;
 

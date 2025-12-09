@@ -14,7 +14,7 @@ import java.util.Scanner;
 public class SimpleTaxCalc {
 
     //Map of U.S state abbreviation --> tax rate
-    private HashMap<String, Double> stateTaxRates;
+    private final HashMap<String, Double> stateTaxRates;
 
     /**
      * Constructs a SimpleTaxCalc and loads state tax rates from CSV file

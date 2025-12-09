@@ -16,8 +16,8 @@ import javax.swing.*;
 
 public class UserFrame extends JFrame implements ActionListener {
 
-    private ProductService productService; // Service to manage products
-    private JPanel mainPanel;              // Main panel for the frame
+    private final ProductService productService; // Service to manage products
+    private final JPanel mainPanel;              // Main panel for the frame
     private JButton addProductBtn;         // Button
     private JButton updateProductBtn;      // Button
     private JButton deleteProductBtn;      // Button
@@ -31,11 +31,11 @@ public class UserFrame extends JFrame implements ActionListener {
     private JTextArea displayArea;         // Area to display information
     private JScrollPane scrollPane;        // Scroll pane for display area
     private int filterOption;          // Current filter option
-    private Cart cart;                     // Customer's shopping cart
+    private final Cart cart;                     // Customer's shopping cart
     private Address address;               // Customer's address for orders
-    private SimpleTaxCalc taxCalculator; // Tax calculator based on address
+    private final SimpleTaxCalc taxCalculator; // Tax calculator based on address
     private String usernameStr;
-    private OrderService orderService;
+    private final OrderService orderService;
 
     public UserFrame(String username) throws IOException {
         this.usernameStr = username;
@@ -468,7 +468,7 @@ public class UserFrame extends JFrame implements ActionListener {
         displayArea.setText("========================================\n");
         displayArea.append("VIEW PAST ORDERS\n");
         displayArea.append("========================================\n\n");
-        String orders = orderService.getOrdersByUsername(usernameStr);
+        String orders = orderService.getOrdersByUsername(usernameStr, productService);
         displayArea.append(orders.isEmpty() ? "You have no past orders.\n" : orders);
     }
 

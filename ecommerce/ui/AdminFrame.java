@@ -14,8 +14,8 @@ import javax.swing.*;
 
 public class AdminFrame extends JFrame implements ActionListener {
 
-    private ProductService productService; // Service to manage products
-    private JPanel mainPanel;              // Main panel for the frame
+    private final ProductService productService; // Service to manage products
+    private final JPanel mainPanel;              // Main panel for the frame
     private JButton addProductBtn;         // Button
     private JButton updateProductBtn;      // Button
     private JButton deleteProductBtn;      // Button
@@ -29,8 +29,8 @@ public class AdminFrame extends JFrame implements ActionListener {
     private JTextArea displayArea;         // Area to display information
     private JScrollPane scrollPane;        // Scroll pane for display area
     private int filterOption;          // Current filter option
-    private OrderService orderService;
-    private ReportService reportService;
+    private final OrderService orderService;
+    private final ReportService reportService;
 
     public AdminFrame() throws IOException {
         // Initialize the ProductService

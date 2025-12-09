@@ -1,12 +1,11 @@
 package ecommerce.service;
 
 /**
- * OrderService
- * Handles persisting orders (CSV-backed) and an in-memory queue
- * 
- * queue used to advance order lifecycle states (PROCESSED -> SHIPPED -> DELIVERED)
+ * OrderService Handles persisting orders (CSV-backed) and an in-memory queue
+ *
+ * queue used to advance order lifecycle states (PROCESSED -> SHIPPED ->
+ * DELIVERED)
  */
-
 import ecommerce.model.Order;
 import ecommerce.model.OrderStatus;
 import java.io.File;
@@ -17,12 +16,13 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Scanner;
 import java.util.StringJoiner;
+
 public class OrderService {
 
     /**
-     * In-memory queue for staged processing of orders.
-     * Populated from `orders.csv` by {@link #fillQueue()} so processing
-     * can resume after a restart
+     * In-memory queue for staged processing of orders. Populated from
+     * `orders.csv` by {@link #fillQueue()} so processing can resume after a
+     * restart
      */
     public static Queue<Order> orderQueue = new LinkedList<>();
 
@@ -34,16 +34,15 @@ public class OrderService {
     }
 
     /**
-     * Return a listing of orders for `username` by
-     * reading `orders.csv` and `orderProducts.csv`
-     * 
-     * Assumes CSV columns: orderId,customerId,total,createdAt,status
-     * This method is simple and not optimized for large files
+     * Return a listing of orders for `username` by reading `orders.csv` and
+     * `orderProducts.csv`
+     *
+     * Assumes CSV columns: orderId,customerId,total,createdAt,status This
+     * method is simple and not optimized for large files
      */
-    public String getOrdersByUsername(String username) throws IOException {
+    public String getOrdersByUsername(String username, ProductService productService) throws IOException {
         Scanner orderScanner = new Scanner(new File("ecommerce/data/orders.csv"));
         Scanner orderProductScanner = null;
-        ProductService productService = new ProductService();
         StringBuilder ordersDisplay = new StringBuilder();
         orderScanner.nextLine(); // skip header
         while (orderScanner.hasNextLine()) {
@@ -56,7 +55,7 @@ public class OrderService {
                 ordersDisplay.append("Total: $").append(orderParts[2]).append("\n");
                 ordersDisplay.append("Date: ").append(orderParts[3]).append("\n");
                 ordersDisplay.append("Items:\n");
-                
+
                 // Find items for this order (scan `orderProducts.csv`).
                 // Format: orderId, productId1, qty1, productId2, qty2, ...
                 orderProductScanner = new Scanner(new File("ecommerce/data/orderProducts.csv"));
@@ -115,7 +114,7 @@ public class OrderService {
             ordersDisplay.append("Date: ").append(orderParts[3]).append("\n");
             ordersDisplay.append("Items:\n");
             // Find items for this order
-                orderProductScanner = new Scanner(new File("ecommerce/data/orderProducts.csv"));
+            orderProductScanner = new Scanner(new File("ecommerce/data/orderProducts.csv"));
             orderProductScanner.nextLine(); // skip header
             while (orderProductScanner.hasNextLine()) {
                 String itemLine = orderProductScanner.nextLine();
@@ -131,15 +130,17 @@ public class OrderService {
             ordersDisplay.append("----------------------------------------\n");
         }
         orderScanner.close();
-        orderProductScanner.close();
+        if (orderProductScanner != null) {
+            orderProductScanner.close();
+        }
         return ordersDisplay.toString();
     }
 
     public void processOrder(Order order) throws IOException {
         /**
-         * Persist the order to disk (append to CSVs) and enqueue it for
-         * staged processing. Uses simple append semantics; there is no
-         * concurrency control in this demo code
+         * Persist the order to disk (append to CSVs) and enqueue it for staged
+         * processing. Uses simple append semantics; there is no concurrency
+         * control in this demo code
          */
         FileWriter orderWriter = new FileWriter("ecommerce/data/orders.csv", true);
         FileWriter orderProductsWriter = new FileWriter("ecommerce/data/orderProducts.csv", true);
@@ -193,8 +194,8 @@ public class OrderService {
 
     public void fillQueue() throws IOException {
         /**
-         * Load non-DELIVERED orders from `orders.csv` into the in-memory
-         * queue so processing can resume between runs
+         * Load non-DELIVERED orders from `orders.csv` into the in-memory queue
+         * so processing can resume between runs
          */
         Scanner orderScanner = new Scanner(new File("ecommerce/data/orders.csv"));
         orderScanner.nextLine(); // skip header
@@ -214,12 +215,13 @@ public class OrderService {
     }
 
     public Order createOrderFromFile(String orderId) throws IOException {
-           /**
-            * Build a  Order object from a CSV row.
-            * Items are omitted because callers often only need id/status/total for queueing and status updates
-            */
-           Scanner orderScanner = new Scanner(new File("ecommerce/data/orders.csv"));
-           orderScanner.nextLine(); // skip header
+        /**
+         * Build a Order object from a CSV row. Items are omitted because
+         * callers often only need id/status/total for queueing and status
+         * updates
+         */
+        Scanner orderScanner = new Scanner(new File("ecommerce/data/orders.csv"));
+        orderScanner.nextLine(); // skip header
         while (orderScanner.hasNextLine()) {
             String orderLine = orderScanner.nextLine();
             String[] orderParts = orderLine.split(",");
@@ -250,8 +252,8 @@ public class OrderService {
 
     public void updateOrderStatusInFile(Order order) throws IOException {
         /**
-         * update an order's status in `orders.csv` by writing
-         * a temporary file and replacing the original
+         * update an order's status in `orders.csv` by writing a temporary file
+         * and replacing the original
          */
         File inputFile = new File("ecommerce/data/orders.csv");
         File tempFile = new File("ecommerce/data/orders_temp.csv");

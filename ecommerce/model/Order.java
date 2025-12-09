@@ -17,8 +17,8 @@ public class Order {
     private String createdAt;
     private double total;
     private OrderStatus status; // e.g., PROCESSED, SHIPPED, DELIVERED
-    private OrderService orderService;
-    private Calendar calendar = java.util.Calendar.getInstance();
+    private final OrderService orderService;
+    private final Calendar calendar = java.util.Calendar.getInstance();
 
     /**
      * Constructs a new Order object.

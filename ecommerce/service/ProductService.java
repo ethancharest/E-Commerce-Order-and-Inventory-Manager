@@ -11,7 +11,7 @@ import java.util.Scanner;
 public class ProductService {
 
     // CSV file where all products data is stored
-    private File productFile;
+    private final File productFile;
 
     // Writer used for appending new products to the CSV
     private FileWriter writer;
@@ -19,14 +19,11 @@ public class ProductService {
     // Reader used when loading products from the CSV
     private Scanner reader;
 
-    private ArrayList<Product> products;
+    private final ArrayList<Product> products;
 
     public ProductService() throws IOException {
         // Itialize the file pointing to the products CSV
         productFile = new File("ecommerce/data/products.csv");
-
-        // Open writer in append mode so we can add products without overwriting the file 
-        writer = new FileWriter(productFile, true);
 
         products = new ArrayList<>();
         getAllProducts(); // Load existing products into memory
@@ -36,45 +33,12 @@ public class ProductService {
      * Generates the next product ID Currently it: -reads all existing products
      * -finds the highest ID -returns maxID + 1
      *
-     * Note: IDs are monotonically increasing, deleted IDs are not reused
-     *
      * @return next product ID
      * @throws IOException
      */
     private int generateProductID() throws IOException {
-        //maybe we could later implement a way for deleted IDs to be reused
-        //we could put the deleted IDs in a separate file and read from there first
         int maxID = 0;
 
-        // Load all products so we can inspect their IDs
-        //ArrayList<String[]> products = getAllProducts();
-        // reader = new Scanner("ecommerce/data/deletedID.csv");
-        // writer = new FileWriter("ecommerce/data/deletedID.csv", true);
-        // FileWriter tempWriter = new FileWriter("ecommerce/data/deletedID.csv");
-        // for (String[] product : products) {
-        //     int id = Integer.parseInt(product[0]);
-        //     if (id != productId) {
-        //         String existingEntry = "\n" + String.join(",", product);
-        //         tempWriter.write(existingEntry);
-        //     }
-        // }
-        // tempWriter.close();
-        // writer.close();
-        // File originalFile = new File("ecommerce/data/products.csv");
-        // File tempFile = new File("ecommerce/data/temp_products.csv");
-        // if (originalFile.delete()) {
-        //     tempFile.renameTo(originalFile);
-        //     writer = new FileWriter(productFile, true);
-        //     System.out.println("Product deleted successfully: ID " + productId);
-        // } else {
-        //     System.out.println("Failed to delete product: ID " + productId);
-        // }
-        // if (reader.hasNextLine()) {
-        //     String line = reader.nextLine();
-        //     maxID = Integer.parseInt(line);
-        //     reader.close();
-        //     return maxID;
-        // }
         // Find the maximum ID currently in the products list
         for (Product product : products) {
             int id = Integer.parseInt(product.getId());
@@ -182,6 +146,9 @@ public class ProductService {
      * @throws IOException
      */
     public void addProduct(String name, String category, double price, int stock) throws IOException {
+        // Open writer in append mode
+        writer = new FileWriter(productFile, true);
+
         // Generate a unique product ID
         String id = String.valueOf(generateProductID());
 
@@ -191,6 +158,7 @@ public class ProductService {
         // Append to file and flush to ensure it is written immediately
         writer.write(productEntry);
         writer.flush();
+        writer.close(); // Close writer
 
         System.out.println("Product added successfully: " + name);
         getAllProducts(); // Refresh the in-memory products list
@@ -230,8 +198,9 @@ public class ProductService {
             }
         }
         tempWriter.close();
-        writer.close(); // Close the original writer before replacing the file
-
+        if (writer != null) {
+            writer.close(); // Close the original writer before replacing the file
+        }
         // Swap temporary file in place of the original products file
         File originalFile = new File("ecommerce/data/products.csv");
         File tempFile = new File("ecommerce/data/temp_products.csv");
@@ -239,8 +208,8 @@ public class ProductService {
         if (originalFile.delete()) {
             tempFile.renameTo(originalFile);
 
-            // Reopen writer in append mode on the new products file
-            writer = new FileWriter(productFile, true);
+            // // Reopen writer in append mode on the new products file
+            // writer = new FileWriter(productFile, true);
             System.out.println("Product updated successfully: ID " + productId);
         } else {
             System.out.println("Failed to update product: ID " + productId);
@@ -267,22 +236,19 @@ public class ProductService {
             if (id != productId) {
                 String existingEntry = "\n" + product.getId() + "," + product.getName() + "," + product.getCategory() + "," + product.getPrice() + "," + product.getAvailableStock();
                 tempWriter.write(existingEntry);
-            } else {
-                // Log deleted ID for potential future reuse
-                FileWriter logWriter = new FileWriter("ecommerce/data/deletedID.csv", true);
-                logWriter.write(productId + "\n");
-                logWriter.close();
             }
         }
         tempWriter.close();
-        writer.close();
+        if (writer != null) {
+            writer.close();
+        }
         File originalFile = new File("ecommerce/data/products.csv");
         File tempFile = new File("ecommerce/data/temp_products.csv");
         if (originalFile.delete()) {
             tempFile.renameTo(originalFile);
 
-            // Open writer again for appending 
-            writer = new FileWriter(productFile, true);
+            // // Open writer again for appending 
+            // writer = new FileWriter(productFile, true);
             System.out.println("Product deleted successfully: ID " + productId);
         } else {
             System.out.println("Failed to delete product: ID " + productId);

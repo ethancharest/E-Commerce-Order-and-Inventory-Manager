@@ -10,14 +10,15 @@ import java.util.Scanner;
 // LoginFrame calls authenticate() to determine whether a user exists and what role they have 
 
 public class AuthService {
+
     // Scanner used to read the CSV file
-    private Scanner fileReader;     
+    private final Scanner fileReader;
 
     // Maps username --> password (simple in-memory storage for project scope)
-    private HashMap<String, String> logins;
+    private final HashMap<String, String> logins;
 
     // Maps username --> role (role stored as string, converted to enum on retrieval)
-    private HashMap<String, String> roles;
+    private final HashMap<String, String> roles;
 
     public AuthService() throws FileNotFoundException {
         // Open the credintials CSV file and read in the data 
@@ -48,18 +49,15 @@ public class AuthService {
         //close file reader 
         fileReader.close();
     }
+
     /**
-    * Validates a login 
-    * Checks:
-    * 1. Username exists
-    * 2. Password matches
-    * Returns:
-    * -The Role enum if found
-    * -Role.NOTFOUND if not found or invalid
-    * @param username
-    * @param password
-    * @return
-    */
+     * Validates a login Checks: 1. Username exists 2. Password matches Returns:
+     * -The Role enum if found -Role.NOTFOUND if not found or invalid
+     *
+     * @param username
+     * @param password
+     * @return
+     */
     public Role authenticate(String username, String password) {
 
         // Check if username exists in system
