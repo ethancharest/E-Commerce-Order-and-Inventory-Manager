@@ -4,8 +4,7 @@ package ecommerce.service;
  * OrderService
  * Handles persisting orders (CSV-backed) and an in-memory queue
  * 
- * queue used to advance order lifecycle states (PROCESSED -> SHIPPED -> DELIVERED).
- * Comments are concise; methods assume small CSV files and simple parsing.
+ * queue used to advance order lifecycle states (PROCESSED -> SHIPPED -> DELIVERED)
  */
 
 import ecommerce.model.Order;
@@ -268,7 +267,7 @@ public class OrderService {
             String line = scanner.nextLine();
             String[] parts = line.split(",");
             if (parts[0].equals(order.getOrderId())) {
-                
+
                 // Replace status field for the matching order row.
                 parts[4] = order.getStatus().toString();
                 String updatedLine = String.join(",", parts);
