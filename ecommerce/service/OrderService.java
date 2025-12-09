@@ -99,7 +99,6 @@ public class OrderService {
 
     /**
      * Produce a readable dump of all orders. Re-scans `orderProducts.csv`
-     * per order for simplicity — this is fine for small datasets
      */
     public String getAllOrders() throws IOException {
         Scanner orderScanner = new Scanner(new File("ecommerce/data/orders.csv"));
